@@ -1,0 +1,78 @@
+name: Publish to Medium
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'posts/**/*.md'
+  workflow_dispatch:
+    inputs:
+      post_file:
+        description: 'Path to the markdown file to publish (e.g., posts/my-article.md)'
+        required: true
+        type: string
+      publish_status:
+        description: 'Publish status'
+        required: true
+        default: 'draft'
+        type: choice
+        options:
+          - draft
+          - public
+          - unlisted
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+      
+      # For push events: detect changed markdown files
+      - name: Get changed files
+        if: github.event_name == 'push'
+        id: changed-files
+        run: |
+          CHANGED_FILES=$(git diff --name-only HEAD~1 HEAD -- 'posts/*.md' 'posts/**/*.md' 2>/dev/null | head -5)
+          echo "files<<EOF" >> $GITHUB_OUTPUT
+          echo "$CHANGED_FILES" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+      
+      # For manual dispatch: use the provided file
+      - name: Set file for manual dispatch
+        if: github.event_name == 'workflow_dispatch'
+        id: manual-file
+        run: |
+          echo "file=${{ github.event.inputs.post_file }}" >> $GITHUB_OUTPUT
+          echo "status=${{ github.event.inputs.publish_status }}" >> $GITHUB_OUTPUT
+      
+      # Publish changed files (push event)
+      - name: Publish to Medium (auto)
+        if: github.event_name == 'push' && steps.changed-files.outputs.files != ''
+        uses: philips-software/post-to-medium-action@v0.6.0
+        env:
+          MEDIUM_FILE_LIST: ${{ steps.changed-files.outputs.files }}
+        with:
+          integration_token: '${{ secrets.MEDIUM_INTEGRATION_TOKEN }}'
+          file: 'posts/_temp.md'  # Placeholder, we iterate below
+          content_format: 'markdown'
+          notify_followers: 'false'
+          publish_status: 'draft'
+          # Publication ID is optional - set if publishing to a publication
+          # publication_id: '${{ secrets.MEDIUM_PUBLICATION_ID }}'
+      
+      # Publish single file (manual dispatch)
+      - name: Publish to Medium (manual)
+        if: github.event_name == 'workflow_dispatch'
+        uses: philips-software/post-to-medium-action@v0.6.0
+        with:
+          integration_token: '${{ secrets.MEDIUM_INTEGRATION_TOKEN }}'
+          file: '${{ steps.manual-file.outputs.file }}'
+          content_format: 'markdown'
+          notify_followers: 'false'
+          publish_status: '${{ steps.manual-file.outputs.status }}'
+          # publication_id: '${{ secrets.MEDIUM_PUBLICATION_ID }}'
