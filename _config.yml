@@ -1,0 +1,46 @@
+# Jekyll configuration for GitHub Pages blog
+title: My Blog
+description: A collection of my articles and thoughts
+url: "" # Will be set by GitHub Pages
+baseurl: "" # Subpath if using project pages (e.g., /blog)
+
+# Build settings
+markdown: kramdown
+highlighter: rouge
+
+# Theme - using a minimal, clean theme
+remote_theme: jekyll/minima
+
+# Plugins
+plugins:
+  - jekyll-feed
+  - jekyll-seo-tag
+  - jekyll-sitemap
+
+# Collections for posts
+defaults:
+  - scope:
+      path: ""
+      type: "posts"
+    values:
+      layout: "post"
+      author: "Author Name"
+
+# Exclude from processing
+exclude:
+  - .git
+  - .gitignore
+  - README.md
+  - Gemfile
+  - Gemfile.lock
+  - node_modules
+  - vendor
+
+# Permalink structure
+permalink: /:year/:month/:day/:title/
+
+# Enable future posts (useful for scheduled content)
+future: false
+
+# Show excerpts on home page
+show_excerpts: true

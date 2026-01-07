@@ -1,73 +1,85 @@
-# Medium Blog Publishing
+# My Blog
 
-Automatically publish your Markdown articles to Medium using GitHub Actions.
+A markdown-first blog powered by Jekyll and GitHub Pages.
 
 ## 🚀 Quick Start
 
-1. **Add your Medium Integration Token**
-   - Go to [Medium Settings → Security and apps](https://medium.com/me/settings/security)
-   - Generate an **Integration Token**
-   - Add it to your GitHub repo: **Settings → Secrets → Actions** → `MEDIUM_INTEGRATION_TOKEN`
+### 1. Create a New Post
 
-2. **Write your article**
-   ```bash
-   cp posts/_template.md posts/my-first-article.md
-   # Edit your article
-   ```
+Create a file in `_posts/` with the format: `YYYY-MM-DD-title.md`
 
-3. **Publish**
-   - **Auto-publish**: Push/merge to `main` branch → publishes as draft
-   - **Manual**: Go to **Actions** → **Publish to Medium** → **Run workflow**
+```markdown
+---
+layout: post
+title: "Your Post Title"
+date: 2026-01-08
+categories: [category1, category2]
+tags: [tag1, tag2]
+excerpt: "Brief description for previews"
+---
+
+Your content here in Markdown...
+```
+
+### 2. Push to GitHub
+
+```bash
+git add .
+git commit -m "New post: Your title"
+git push origin main
+```
+
+### 3. Automatic Deployment
+
+GitHub Actions will automatically build and deploy to GitHub Pages.
+
+Your blog will be live at: `https://<username>.github.io/<repo-name>/`
 
 ## 📁 Structure
 
 ```
-├── posts/
-│   ├── _template.md      # Copy this for new articles
-│   └── my-article.md     # Your articles go here
-├── .github/
-│   └── workflows/
-│       └── publish-to-medium.yml
-└── README.md
+├── _posts/              # Your blog posts (YYYY-MM-DD-title.md)
+├── _config.yml          # Jekyll configuration
+├── assets/images/       # Images for posts
+├── index.md             # Home page
+└── .github/workflows/   # Auto-deploy workflow
 ```
 
-## ✍️ Article Format
+## 🔧 Setup (First Time)
 
-```markdown
----
-title: "Your Article Title"
-tags: ["programming", "tutorial"]
-canonicalUrl: "https://yourblog.com/original-post"  # Optional
----
+1. Create a GitHub repository
+2. Push this code
+3. Go to **Settings → Pages → Source → GitHub Actions**
+4. Wait for the first deployment
 
-# Your Article Title
+## ✍️ Cross-Posting to Medium
 
-Your content here...
+Since Medium no longer provides API tokens:
+
+1. Write your post in `_posts/`
+2. Push to GitHub → auto-deploys to your site
+3. On Medium: **Import a story** → paste your GitHub Pages URL
+   - Or manually copy the markdown content
+4. Set the **canonical URL** in Medium to your GitHub Pages post URL
+
+> **Tip**: Setting the canonical URL tells search engines your site is the original source.
+
+## 🎨 Customization
+
+Edit `_config.yml` to change:
+- Site title & description
+- Author name
+- Theme settings
+- Permalink structure
+
+## 📝 Local Development
+
+```bash
+# Install dependencies
+bundle install
+
+# Run local server
+bundle exec jekyll serve
+
+# View at http://localhost:4000
 ```
-
-## ⚙️ Configuration
-
-### Publish to a Publication
-
-1. Get your **Publication ID** from Medium
-2. Add secret: `MEDIUM_PUBLICATION_ID`
-3. Uncomment `publication_id` in `.github/workflows/publish-to-medium.yml`
-
-### Secrets Required
-
-| Secret | Required | Description |
-|--------|----------|-------------|
-| `MEDIUM_INTEGRATION_TOKEN` | ✅ Yes | Your Medium integration token |
-| `MEDIUM_PUBLICATION_ID` | ❌ Optional | For publishing to a publication |
-
-## 📝 Publishing Options
-
-| Trigger | Status | Description |
-|---------|--------|-------------|
-| Push to `main` | Draft | Safe - review on Medium before publishing |
-| Manual workflow | Selectable | Choose: draft, public, or unlisted |
-
-## 🔗 Useful Links
-
-- [Medium API Documentation](https://github.com/Medium/medium-api-docs)
-- [Generate Integration Token](https://medium.com/me/settings/security)
