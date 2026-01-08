@@ -5,7 +5,7 @@ date: 2026-01-15
 categories: [spring-boot, java, performance]
 tags: [spring-boot, file-upload, streaming, performance, memory-management]
 excerpt: "Learn how to handle massive file uploads (1GB+) in Spring Boot without crashing your heap. We replace standard MultipartFile with efficient streaming."
-image: /assets/images/otel-hero-banner.png 
+image: /assets/images/spring-upload-hero.png
 ---
 
 We've all been there. You build a sleek file upload service using Spring Boot's convenient `MultipartFile` interface. It works great for profile pictures and documents.
@@ -101,6 +101,8 @@ private void streamToDb(InputStream is) {
 ## Benchmarks: Buffering vs. Streaming
 
 I ran a benchmark uploading a **CSV with 100,000 records** to this application.
+
+![Memory Usage Comparison]({{ site.url }}{{ site.baseurl }}/assets/images/memory-benchmark.png)
 
 | Method | Heap Usage (Peak) | Result | GC Activity |
 |--------|-------------------|--------|-------------|
