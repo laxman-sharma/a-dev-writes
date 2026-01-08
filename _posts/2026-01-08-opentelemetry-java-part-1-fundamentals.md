@@ -2,10 +2,13 @@
 layout: post
 title: "OpenTelemetry with Java: Part 1 - Understanding the Fundamentals"
 date: 2026-01-08
+author: Laxman Sharma
 categories: [observability, java]
 tags: [opentelemetry, distributed-tracing, microservices, java, spring-boot]
 excerpt: "A comprehensive introduction to OpenTelemetry concepts for Java developers. Learn about traces, metrics, logs, and how they work together in distributed microservices."
 ---
+
+![OpenTelemetry Distributed Tracing](/assets/images/otel-hero-banner.png)
 
 # OpenTelemetry with Java: Understanding the Fundamentals
 
@@ -79,35 +82,9 @@ OpenTelemetry emerged as the **merger of OpenTracing and OpenCensus**, and is no
 
 Understanding OTel's components is crucial before implementation:
 
-```
-┌─────────────────────────────────────────────────────────────────┐
-│                        YOUR APPLICATION                          │
-│  ┌──────────────────────────────────────────────────────────┐   │
-│  │                   OTel Java Agent                         │   │
-│  │  (Auto-instruments HTTP, JDBC, Kafka, gRPC, etc.)        │   │
-│  └──────────────────────────────────────────────────────────┘   │
-│                              +                                   │
-│  ┌──────────────────────────────────────────────────────────┐   │
-│  │                   OTel SDK                                │   │
-│  │  (Manual instrumentation: custom spans, metrics, attrs)   │   │
-│  └──────────────────────────────────────────────────────────┘   │
-└─────────────────────────────────────────────────────────────────┘
-                               │
-                               │ OTLP (OpenTelemetry Protocol)
-                               ▼
-                  ┌─────────────────────────┐
-                  │    OTel Collector       │
-                  │  (Process, transform,   │
-                  │   route telemetry)      │
-                  └─────────────────────────┘
-                               │
-              ┌────────────────┼────────────────┐
-              ▼                ▼                ▼
-        ┌──────────┐    ┌──────────┐    ┌──────────┐
-        │  Jaeger  │    │Prometheus│    │  Vendor  │
-        │ (Traces) │    │(Metrics) │    │  (Any)   │
-        └──────────┘    └──────────┘    └──────────┘
-```
+![OpenTelemetry Architecture - Java SDK to Collector to Backends](/assets/images/otel-architecture.png)
+
+*The flow: Your Java application with OTel SDK/Agent sends telemetry via OTLP to the Collector, which routes it to backends like Jaeger, Prometheus, or any vendor.*
 
 ### The Components
 

@@ -1,4 +1,6 @@
-<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="4.4.1">Jekyll</generator><link href="http://localhost:4000/feed.xml" rel="self" type="application/atom+xml" /><link href="http://localhost:4000/" rel="alternate" type="text/html" /><updated>2026-01-08T23:31:43+08:00</updated><id>http://localhost:4000/feed.xml</id><title type="html">My Blog</title><subtitle>A collection of my articles and thoughts</subtitle><entry><title type="html">OpenTelemetry with Java: Part 1 - Understanding the Fundamentals</title><link href="http://localhost:4000/2026/01/08/opentelemetry-java-part-1-fundamentals/" rel="alternate" type="text/html" title="OpenTelemetry with Java: Part 1 - Understanding the Fundamentals" /><published>2026-01-08T00:00:00+08:00</published><updated>2026-01-08T00:00:00+08:00</updated><id>http://localhost:4000/2026/01/08/opentelemetry-java-part-1-fundamentals</id><content type="html" xml:base="http://localhost:4000/2026/01/08/opentelemetry-java-part-1-fundamentals/"><![CDATA[<h1 id="opentelemetry-with-java-understanding-the-fundamentals">OpenTelemetry with Java: Understanding the Fundamentals</h1>
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="4.4.1">Jekyll</generator><link href="/feed.xml" rel="self" type="application/atom+xml" /><link href="/" rel="alternate" type="text/html" /><updated>2026-01-08T23:40:06+08:00</updated><id>/feed.xml</id><title type="html">A Dev Writes</title><subtitle>Technical articles on software engineering, observability, and distributed systems</subtitle><author><name>Laxman Sharma</name></author><entry><title type="html">OpenTelemetry with Java: Part 1 - Understanding the Fundamentals</title><link href="/2026/01/08/opentelemetry-java-part-1-fundamentals/" rel="alternate" type="text/html" title="OpenTelemetry with Java: Part 1 - Understanding the Fundamentals" /><published>2026-01-08T00:00:00+08:00</published><updated>2026-01-08T00:00:00+08:00</updated><id>/2026/01/08/opentelemetry-java-part-1-fundamentals</id><content type="html" xml:base="/2026/01/08/opentelemetry-java-part-1-fundamentals/"><![CDATA[<p><img src="/assets/images/otel-hero-banner.png" alt="OpenTelemetry Distributed Tracing" /></p>
+
+<h1 id="opentelemetry-with-java-understanding-the-fundamentals">OpenTelemetry with Java: Understanding the Fundamentals</h1>
 
 <p><em>Part 1 of a 6-part series on implementing observability in Java microservices</em></p>
 
@@ -94,34 +96,9 @@
 
 <p>Understanding OTel’s components is crucial before implementation:</p>
 
-<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>┌─────────────────────────────────────────────────────────────────┐
-│                        YOUR APPLICATION                          │
-│  ┌──────────────────────────────────────────────────────────┐   │
-│  │                   OTel Java Agent                         │   │
-│  │  (Auto-instruments HTTP, JDBC, Kafka, gRPC, etc.)        │   │
-│  └──────────────────────────────────────────────────────────┘   │
-│                              +                                   │
-│  ┌──────────────────────────────────────────────────────────┐   │
-│  │                   OTel SDK                                │   │
-│  │  (Manual instrumentation: custom spans, metrics, attrs)   │   │
-│  └──────────────────────────────────────────────────────────┘   │
-└─────────────────────────────────────────────────────────────────┘
-                               │
-                               │ OTLP (OpenTelemetry Protocol)
-                               ▼
-                  ┌─────────────────────────┐
-                  │    OTel Collector       │
-                  │  (Process, transform,   │
-                  │   route telemetry)      │
-                  └─────────────────────────┘
-                               │
-              ┌────────────────┼────────────────┐
-              ▼                ▼                ▼
-        ┌──────────┐    ┌──────────┐    ┌──────────┐
-        │  Jaeger  │    │Prometheus│    │  Vendor  │
-        │ (Traces) │    │(Metrics) │    │  (Any)   │
-        └──────────┘    └──────────┘    └──────────┘
-</code></pre></div></div>
+<p><img src="/assets/images/otel-architecture.png" alt="OpenTelemetry Architecture - Java SDK to Collector to Backends" /></p>
+
+<p><em>The flow: Your Java application with OTel SDK/Agent sends telemetry via OTLP to the Collector, which routes it to backends like Jaeger, Prometheus, or any vendor.</em></p>
 
 <h3 id="the-components">The Components</h3>
 
@@ -264,7 +241,7 @@
   <li><a href="https://opentelemetry.io/docs/languages/java/">OpenTelemetry Java</a></li>
   <li><a href="https://opentelemetry.io/docs/concepts/semantic-conventions/">Semantic Conventions</a></li>
   <li><a href="https://www.cncf.io/projects/opentelemetry/">CNCF OpenTelemetry Project</a></li>
-</ul>]]></content><author><name>Author Name</name></author><category term="observability" /><category term="java" /><category term="opentelemetry" /><category term="distributed-tracing" /><category term="microservices" /><category term="java" /><category term="spring-boot" /><summary type="html"><![CDATA[A comprehensive introduction to OpenTelemetry concepts for Java developers. Learn about traces, metrics, logs, and how they work together in distributed microservices.]]></summary></entry><entry><title type="html">Welcome to My Blog</title><link href="http://localhost:4000/2026/01/08/welcome/" rel="alternate" type="text/html" title="Welcome to My Blog" /><published>2026-01-08T00:00:00+08:00</published><updated>2026-01-08T00:00:00+08:00</updated><id>http://localhost:4000/2026/01/08/welcome</id><content type="html" xml:base="http://localhost:4000/2026/01/08/welcome/"><![CDATA[<h1 id="welcome">Welcome!</h1>
+</ul>]]></content><author><name>Laxman Sharma</name></author><category term="observability" /><category term="java" /><category term="opentelemetry" /><category term="distributed-tracing" /><category term="microservices" /><category term="java" /><category term="spring-boot" /><summary type="html"><![CDATA[A comprehensive introduction to OpenTelemetry concepts for Java developers. Learn about traces, metrics, logs, and how they work together in distributed microservices.]]></summary></entry><entry><title type="html">Welcome to My Blog</title><link href="/2026/01/08/welcome/" rel="alternate" type="text/html" title="Welcome to My Blog" /><published>2026-01-08T00:00:00+08:00</published><updated>2026-01-08T00:00:00+08:00</updated><id>/2026/01/08/welcome</id><content type="html" xml:base="/2026/01/08/welcome/"><![CDATA[<h1 id="welcome">Welcome!</h1>
 
 <p>This is my first blog post. I’ll be sharing my thoughts, tutorials, and insights here.</p>
 
@@ -287,4 +264,4 @@
 
 <hr />
 
-<p><em>Stay tuned for more content!</em></p>]]></content><author><name>Author Name</name></author><category term="general" /><category term="welcome" /><category term="first-post" /><summary type="html"><![CDATA[This is my first blog post. Welcome to my corner of the internet!]]></summary></entry></feed>
+<p><em>Stay tuned for more content!</em></p>]]></content><author><name>Laxman Sharma</name></author><category term="general" /><category term="welcome" /><category term="first-post" /><summary type="html"><![CDATA[This is my first blog post. Welcome to my corner of the internet!]]></summary></entry></feed>

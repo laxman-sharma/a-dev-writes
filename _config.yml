@@ -1,21 +1,34 @@
-# Jekyll configuration for GitHub Pages blog
-title: My Blog
-description: A collection of my articles and thoughts
+# Jekyll configuration for A Dev Writes blog
+title: A Dev Writes
+description: Technical articles on software engineering, observability, and distributed systems
+author: Laxman Sharma
+email: ""
 url: "" # Will be set by GitHub Pages
-baseurl: "" # Subpath if using project pages (e.g., /blog)
+baseurl: "" # Subpath if using project pages
 
 # Build settings
 markdown: kramdown
 highlighter: rouge
 
-# Theme - using a minimal, clean theme
-remote_theme: jekyll/minima
+# Theme
+theme: minima
 
 # Plugins
 plugins:
   - jekyll-feed
   - jekyll-seo-tag
   - jekyll-sitemap
+
+# Minima theme settings
+minima:
+  skin: dark
+  date_format: "%B %-d, %Y"
+  social_links:
+    - { platform: github, user_url: "https://github.com/laxman-sharma" }
+
+# Author defaults
+author:
+  name: Laxman Sharma
 
 # Collections for posts
 defaults:
@@ -24,7 +37,7 @@ defaults:
       type: "posts"
     values:
       layout: "post"
-      author: "Author Name"
+      author: "Laxman Sharma"
 
 # Exclude from processing
 exclude:
@@ -35,11 +48,12 @@ exclude:
   - Gemfile.lock
   - node_modules
   - vendor
+  - _site
 
 # Permalink structure
 permalink: /:year/:month/:day/:title/
 
-# Enable future posts (useful for scheduled content)
+# Enable future posts
 future: false
 
 # Show excerpts on home page
