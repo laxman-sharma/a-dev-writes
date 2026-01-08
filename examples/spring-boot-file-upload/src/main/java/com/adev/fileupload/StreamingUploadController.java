@@ -1,10 +1,9 @@
 package com.adev.fileupload;
 
 import jakarta.servlet.http.HttpServletRequest;
-import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.fileupload.FileItemIterator;
-import org.apache.commons.fileupload.FileItemStream;
-import org.apache.commons.fileupload.servlet.ServletFileUpload;
+import org.apache.commons.fileupload2.core.FileItemInput;
+import org.apache.commons.fileupload2.core.FileItemInputIterator;
+import org.apache.commons.fileupload2.jakarta.servlet6.JakartaServletFileUpload;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -20,8 +19,9 @@ import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/upload")
-@Slf4j
 public class StreamingUploadController {
+
+    private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(StreamingUploadController.class);
 
     /**
      * Handles file upload via streaming.
@@ -31,38 +31,34 @@ public class StreamingUploadController {
     @PostMapping(consumes = "multipart/form-data")
     public ResponseEntity<String> uploadFile(HttpServletRequest request) {
         // 1. Check if the request contains multipart content
-        boolean isMultipart = ServletFileUpload.isMultipartContent(request);
+        boolean isMultipart = JakartaServletFileUpload.isMultipartContent(request);
         if (!isMultipart) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Not a multipart request");
         }
 
         // 2. Create a new ServletFileUpload instance
-        ServletFileUpload upload = new ServletFileUpload();
+        JakartaServletFileUpload upload = new JakartaServletFileUpload();
 
         try {
             // 3. Parse the request directly using streams
-            FileItemIterator iter = upload.getItemIterator(request);
+            FileItemInputIterator iter = upload.getItemIterator(request);
 
             while (iter.hasNext()) {
-                FileItemStream item = iter.next();
-                String name = item.getFieldName();
-                InputStream stream = item.openStream();
+                FileItemInput item = iter.next();
+                InputStream stream = item.getInputStream();
 
                 if (!item.isFormField()) {
                     // This is a file part
                     String filename = item.getName();
                     log.info("Start processing file: {}", filename);
                     
-                    // 4. Process the stream (e.g., pipe to file or S3)
-                    // We artificially limit this demo to just counting bytes to prove consumption
-                    // or write to a temp file on disk without heap buffering.
+                    // 4. Process the stream
                     
-                    long size = streamToFile(stream, filename);
+                    long size = streamToDb(stream, filename);
 
                     log.info("Finished processing file: {}. Size: {} bytes", filename, size);
                 } else {
                     // Process form fields if any (metadata)
-                    // ...
                 }
             }
             return ResponseEntity.ok("File uploaded successfully via streaming!");
@@ -73,27 +69,42 @@ public class StreamingUploadController {
         }
     }
 
+    @org.springframework.beans.factory.annotation.Autowired
+    private ProductRepository productRepository;
+
     /**
-     * Reads from InputStream and writes to a temp file using a small buffer.
-     * This ensures only ~8KB of heap is used regardless of file size (1GB or 100GB).
+     * Reads from InputStream, parses CSV lines, and saves to H2 in batches.
      */
-    private long streamToFile(InputStream inputStream, String originalFilename) throws Exception {
-        Path tempFile = Files.createTempFile("upload-", "-" + UUID.randomUUID().toString());
-        log.info("Streaming to temp file: {}", tempFile);
+    private long streamToDb(InputStream inputStream, String originalFilename) throws Exception {
+        long totalBytes = 0;
+        int batchSize = 1000;
+        java.util.List<Product> batch = new java.util.ArrayList<>(batchSize);
         
-        try (OutputStream outputStream = Files.newOutputStream(tempFile, StandardOpenOption.CREATE, StandardOpenOption.WRITE)) {
-            byte[] buffer = new byte[8192]; // 8KB buffer
-            long totalBytes = 0;
-            int bytesRead;
-            
-            while ((bytesRead = inputStream.read(buffer)) != -1) {
-                outputStream.write(buffer, 0, bytesRead);
-                totalBytes += bytesRead;
+        try (java.io.BufferedReader reader = new java.io.BufferedReader(new java.io.InputStreamReader(inputStream, java.nio.charset.StandardCharsets.UTF_8))) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                totalBytes += line.length(); // Approximation
                 
-                // Optional: Log progress every 100MB for demo
-                if (totalBytes % (100 * 1024 * 1024) == 0) {
-                     log.info("Processed {} MB...", totalBytes / 1024 / 1024);
+                // Simple CSV parsing (Assuming Format: Name,Description,Price)
+                String[] parts = line.split(",");
+                if (parts.length >= 3) {
+                    Product p = new Product(parts[0].trim(), parts[1].trim(), Double.parseDouble(parts[2].trim()));
+                    batch.add(p);
                 }
+
+                if (batch.size() >= batchSize) {
+                    productRepository.saveAll(batch);
+                    productRepository.flush(); // Force write to DB
+                    batch.clear();
+                    
+                    // Log memory snapshot
+                    long usedMemory = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
+                    log.info("Persisted {} records... [Heap Used: {} MB]", productRepository.count(), usedMemory / 1024 / 1024);
+                }
+            }
+            // Save remaining
+            if (!batch.isEmpty()) {
+                productRepository.saveAll(batch);
             }
             return totalBytes;
         }

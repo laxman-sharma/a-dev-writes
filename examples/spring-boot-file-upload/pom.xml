@@ -35,11 +35,11 @@
 			<artifactId>lombok</artifactId>
 			<optional>true</optional>
 		</dependency>
-		<!-- Apache Commons FileUpload for easier stream parsing -->
+		<!-- Apache Commons FileUpload 2 for Jakarta EE (Spring Boot 3) -->
 		<dependency>
-			<groupId>commons-fileupload</groupId>
-			<artifactId>commons-fileupload</artifactId>
-			<version>1.5</version>
+			<groupId>org.apache.commons</groupId>
+			<artifactId>commons-fileupload2-jakarta-servlet6</artifactId>
+			<version>2.0.0-M2</version>
 		</dependency>
 		
 		<dependency>

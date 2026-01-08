@@ -15,7 +15,7 @@ excerpt: "Get distributed tracing working in your Java microservices with zero c
 
 ---
 
-In [Part 1]({{ site.baseurl }}/2026/01/08/opentelemetry-java-part-1-fundamentals/), we built the mental model for OpenTelemetry. Now it's time to get our hands dirty.
+In [Part 1]({{ site.url }}{{ site.baseurl }}/2026/01/08/opentelemetry-java-part-1-fundamentals/), we built the mental model for OpenTelemetry. Now it's time to get our hands dirty.
 
 By the end of this article, you'll have **distributed tracing working across multiple microservices** with zero code changes. We'll use the OpenTelemetry Java Agent for auto-instrumentation and Jaeger for visualization.
 
@@ -270,9 +270,9 @@ The traces will become much more useful for debugging real production issues.
 
 ---
 
-*Previous: [Part 1 - Understanding the Fundamentals]({{ site.baseurl }}/2026/01/08/opentelemetry-java-part-1-fundamentals/)*
+*Previous: [Part 1 - Understanding the Fundamentals]({{ site.url }}{{ site.baseurl }}/2026/01/08/opentelemetry-java-part-1-fundamentals/)*
 
-*Next: [Part 3 - Adding Custom Instrumentation]({{ site.baseurl }}/2026/01/10/opentelemetry-java-part-3-custom-instrumentation/)*
+*Next: [Part 3 - Adding Custom Instrumentation]({{ site.url }}{{ site.baseurl }}/2026/01/10/opentelemetry-java-part-3-custom-instrumentation/)*
 
 ---
 
