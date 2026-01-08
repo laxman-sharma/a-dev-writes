@@ -3,8 +3,8 @@ title: A Dev Writes
 description: Technical articles on software engineering, observability, and distributed systems
 author: Laxman Sharma
 email: ""
-url: "" # Will be set by GitHub Pages
-baseurl: "" # Subpath if using project pages
+url: "https://laxman-sharma.github.io"
+baseurl: "/a-dev-writes" # Subpath of your repository
 
 # Build settings
 markdown: kramdown
