@@ -37,7 +37,7 @@ jobs:
         run: |
           gem install bundler jekyll
           bundle install --jobs 4 --retry 3 || true
-          bundle exec jekyll build --baseurl "${{ steps.pages.outputs.base_path }}" || jekyll build
+          bundle exec jekyll build
         env:
           JEKYLL_ENV: production
       
