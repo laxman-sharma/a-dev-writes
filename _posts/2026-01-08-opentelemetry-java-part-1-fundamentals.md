@@ -81,7 +81,7 @@ OpenTelemetry emerged as the **merger of OpenTracing and OpenCensus**, and is no
 
 Understanding OTel's components is crucial before implementation:
 
-![OpenTelemetry Architecture - Java SDK to Collector to Backends](/assets/images/otel-architecture.png)
+![OpenTelemetry Architecture - Java SDK to Collector to Backends]({{ site.baseurl }}/assets/images/otel-architecture.png)
 
 *The flow: Your Java application with OTel SDK/Agent sends telemetry via OTLP to the Collector, which routes it to backends like Jaeger, Prometheus, or any vendor.*
 
@@ -192,7 +192,7 @@ No more theory—just code.
 
 ---
 
-*Next: [Part 2 - Zero to Tracing in 15 Minutes](/2026/01/09/opentelemetry-java-part-2-zero-to-tracing/)*
+*Next: [Part 2 - Zero to Tracing in 15 Minutes]({{ site.baseurl }}/2026/01/09/opentelemetry-java-part-2-zero-to-tracing/)*
 
 ---
 

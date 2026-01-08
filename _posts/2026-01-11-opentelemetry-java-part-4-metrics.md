@@ -326,9 +326,9 @@ In **Part 5**, we'll complete the observability story with **structured logging*
 
 ---
 
-*Previous: [Part 3 - Custom Instrumentation](/2026/01/10/opentelemetry-java-part-3-custom-instrumentation/)*
+*Previous: [Part 3 - Custom Instrumentation]({{ site.baseurl }}/2026/01/10/opentelemetry-java-part-3-custom-instrumentation/)*
 
-*Next: [Part 5 - Logs in Context](/2026/01/12/opentelemetry-java-part-5-logs/)*
+*Next: [Part 5 - Logs in Context]({{ site.baseurl }}/2026/01/12/opentelemetry-java-part-5-logs/)*
 
 ---
 

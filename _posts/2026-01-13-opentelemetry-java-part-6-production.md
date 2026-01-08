@@ -457,7 +457,7 @@ You now have everything needed to implement production-grade observability in yo
 
 ---
 
-*Previous: [Part 5 - Logs in Context](/2026/01/12/opentelemetry-java-part-5-logs/)*
+*Previous: [Part 5 - Logs in Context]({{ site.baseurl }}/2026/01/12/opentelemetry-java-part-5-logs/)*
 
 ---
 

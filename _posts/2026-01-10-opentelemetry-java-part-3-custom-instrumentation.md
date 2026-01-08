@@ -15,7 +15,7 @@ excerpt: "Enrich your auto-instrumentation with custom spans, business attribute
 
 ---
 
-In [Part 2](/2026/01/09/opentelemetry-java-part-2-zero-to-tracing/), we got distributed tracing working with zero code changes. But the auto-generated spans are generic: `POST /orders`, `GET /inventory`. 
+In [Part 2]({{ site.baseurl }}/2026/01/09/opentelemetry-java-part-2-zero-to-tracing/), we got distributed tracing working with zero code changes. But the auto-generated spans are generic: `POST /orders`, `GET /inventory`. 
 
 When debugging production issues, you need **business context**: *Which order failed? Which customer? What was the payment amount?*
 
@@ -317,9 +317,9 @@ We'll export to Prometheus and build dashboards in Grafana.
 
 ---
 
-*Previous: [Part 2 - Zero to Tracing](/2026/01/09/opentelemetry-java-part-2-zero-to-tracing/)*
+*Previous: [Part 2 - Zero to Tracing]({{ site.baseurl }}/2026/01/09/opentelemetry-java-part-2-zero-to-tracing/)*
 
-*Next: [Part 4 - Metrics That Matter](/2026/01/11/opentelemetry-java-part-4-metrics/)*
+*Next: [Part 4 - Metrics That Matter]({{ site.baseurl }}/2026/01/11/opentelemetry-java-part-4-metrics/)*
 
 ---
 
