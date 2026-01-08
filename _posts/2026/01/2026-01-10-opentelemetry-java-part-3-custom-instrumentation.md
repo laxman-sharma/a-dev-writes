@@ -5,7 +5,7 @@ date: 2026-01-10
 author: Laxman Sharma
 image: /assets/images/otel-part3-hero.png
 categories: [observability, java]
-tags: [opentelemetry, manual-instrumentation, spring-boot, annotations]
+tags: [opentelemetry, java, observability, spring-boot, custom-attributes]
 excerpt: "Enrich your auto-instrumentation with custom spans, business attributes, and events. Learn when and how to add manual instrumentation for better debugging."
 ---
 

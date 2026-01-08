@@ -5,7 +5,7 @@ date: 2026-01-13
 author: Laxman Sharma
 image: /assets/images/otel-part6-hero.png
 categories: [observability, java]
-tags: [opentelemetry, collector, sampling, kubernetes, production]
+tags: [opentelemetry, java, observability, production, kubernetes]
 excerpt: "Production-ready observability with the OpenTelemetry Collector. Learn about sampling strategies, multi-backend export, and Kubernetes deployment patterns."
 ---
 

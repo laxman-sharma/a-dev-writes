@@ -5,7 +5,7 @@ date: 2026-01-12
 author: Laxman Sharma
 image: /assets/images/otel-part5-hero.png
 categories: [observability, java]
-tags: [opentelemetry, logging, structured-logging, trace-correlation]
+tags: [opentelemetry, java, observability, logging, logs]
 excerpt: "Unify your logs with traces. Learn to add trace IDs to log output, configure structured JSON logging, and correlate logs with distributed traces."
 ---
 

@@ -5,7 +5,7 @@ date: 2026-01-08
 author: Laxman Sharma
 image: /assets/images/otel-hero-banner.png
 categories: [observability, java]
-tags: [opentelemetry, distributed-tracing, microservices, java, spring-boot]
+tags: [opentelemetry, java, observability, microservices]
 excerpt: "A comprehensive introduction to OpenTelemetry concepts for Java developers. Learn about traces, metrics, logs, and how they work together in distributed microservices."
 ---
 

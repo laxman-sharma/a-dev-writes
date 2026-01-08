@@ -5,7 +5,7 @@ date: 2026-01-09
 author: Laxman Sharma
 image: /assets/images/otel-part2-hero.png
 categories: [observability, java]
-tags: [opentelemetry, distributed-tracing, java-agent, jaeger, docker]
+tags: [opentelemetry, java, observability, tracing, jaeger]
 excerpt: "Get distributed tracing working in your Java microservices with zero code changes. We'll use the OpenTelemetry Java Agent and Jaeger to see traces in action."
 ---
 

@@ -5,7 +5,7 @@ date: 2026-01-11
 author: Laxman Sharma
 image: /assets/images/otel-part4-hero.png
 categories: [observability, java]
-tags: [opentelemetry, metrics, prometheus, grafana, monitoring]
+tags: [opentelemetry, java, observability, metrics, prometheus, grafana]
 excerpt: "Learn to add custom application metrics alongside traces. We'll cover counters, gauges, histograms and build a Grafana dashboard."
 ---
 

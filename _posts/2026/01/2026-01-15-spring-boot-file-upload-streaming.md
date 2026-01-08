@@ -3,7 +3,7 @@ layout: post
 title: "High-Throughput, Low-Memory: Streaming File Uploads in Spring Boot"
 date: 2026-01-15
 categories: [spring-boot, java, performance]
-tags: [spring-boot, file-upload, streaming, performance, memory-management]
+tags: [java, spring-boot, performance, streaming, database]
 excerpt: "Learn how to handle massive file uploads (1GB+) in Spring Boot without crashing your heap. We replace standard MultipartFile with efficient streaming."
 image: /assets/images/spring-upload-hero.png
 ---
