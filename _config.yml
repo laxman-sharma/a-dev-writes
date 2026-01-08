@@ -53,8 +53,8 @@ exclude:
 # Permalink structure
 permalink: /:year/:month/:day/:title/
 
-# Enable future posts
-future: false
+# Enable future posts (for scheduled content)
+future: true
 
 # Show excerpts on home page
 show_excerpts: true
