@@ -1,0 +1,61 @@
+---
+layout: default
+title: All Topics
+permalink: /tags/
+---
+
+<div class="tags-page">
+    <header class="tags-header">
+        <h1 class="page-title">Browse by Topic</h1>
+        <p class="page-description">Explore all articles grouped by category and tag.</p>
+    </header>
+
+    <div class="wrapper">
+        <!-- Tag Cloud (Alphabetical) -->
+        <section class="all-tags-cloud">
+            {% assign sorted_tags = site.tags | sort %}
+            {% for tag in sorted_tags %}
+            {% assign tag_name = tag[0] %}
+            {% assign posts_count = tag[1].size %}
+            <a href="#{{ tag_name | slugify }}" class="tag-link large">
+                {{ tag_name }}
+                <span class="tag-count">{{ posts_count }}</span>
+            </a>
+            {% endfor %}
+        </section>
+
+        <hr class="divider">
+
+        <!-- Posts by Tag -->
+        <div class="tags-content">
+            {% for tag in sorted_tags %}
+            {% assign tag_name = tag[0] %}
+            {% assign posts = tag[1] %}
+            <section id="{{ tag_name | slugify }}" class="tag-group">
+                <h2 class="tag-group-title">
+                    <span class="hashtag">#</span> {{ tag_name }}
+                </h2>
+                <div class="tag-posts-grid">
+                    {% for post in posts %}
+                    <article class="mini-post-card">
+                        {% if post.image %}
+                        <div class="mini-card-image">
+                            <a href="{{ post.url | relative_url }}">
+                                <img src="{{ post.image | relative_url }}" alt="{{ post.title }}">
+                            </a>
+                        </div>
+                        {% endif %}
+                        <div class="mini-content">
+                            <time class="mini-date">{{ post.date | date: "%B %-d, %Y" }}</time>
+                            <h3 class="mini-title">
+                                <a href="{{ post.url | relative_url }}">{{ post.title }}</a>
+                            </h3>
+                        </div>
+                    </article>
+                    {% endfor %}
+                </div>
+            </section>
+            {% endfor %}
+        </div>
+    </div>
+</div>

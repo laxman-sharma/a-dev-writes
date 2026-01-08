@@ -1,0 +1,592 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- Begin Jekyll SEO tag v2.8.0 -->
+<title>OpenTelemetry with Java: Part 6 - Production Patterns &amp; The Collector | A Dev Writes</title>
+<meta name="generator" content="Jekyll v4.4.1" />
+<meta property="og:title" content="OpenTelemetry with Java: Part 6 - Production Patterns &amp; The Collector" />
+<meta name="author" content="Laxman Sharma" />
+<meta property="og:locale" content="en_US" />
+<meta name="description" content="Production-ready observability with the OpenTelemetry Collector. Learn about sampling strategies, multi-backend export, and Kubernetes deployment patterns." />
+<meta property="og:description" content="Production-ready observability with the OpenTelemetry Collector. Learn about sampling strategies, multi-backend export, and Kubernetes deployment patterns." />
+<link rel="canonical" href="http://localhost:4000/2026/01/13/opentelemetry-java-part-6-production/" />
+<meta property="og:url" content="http://localhost:4000/2026/01/13/opentelemetry-java-part-6-production/" />
+<meta property="og:site_name" content="A Dev Writes" />
+<meta property="og:image" content="http://localhost:4000/assets/images/otel-part6-hero.png" />
+<meta property="og:type" content="article" />
+<meta property="article:published_time" content="2026-01-13T00:00:00+08:00" />
+<meta name="twitter:card" content="summary_large_image" />
+<meta property="twitter:image" content="http://localhost:4000/assets/images/otel-part6-hero.png" />
+<meta property="twitter:title" content="OpenTelemetry with Java: Part 6 - Production Patterns &amp; The Collector" />
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"BlogPosting","author":{"@type":"Person","name":"Laxman Sharma"},"dateModified":"2026-01-13T00:00:00+08:00","datePublished":"2026-01-13T00:00:00+08:00","description":"Production-ready observability with the OpenTelemetry Collector. Learn about sampling strategies, multi-backend export, and Kubernetes deployment patterns.","headline":"OpenTelemetry with Java: Part 6 - Production Patterns &amp; The Collector","image":"http://localhost:4000/assets/images/otel-part6-hero.png","mainEntityOfPage":{"@type":"WebPage","@id":"http://localhost:4000/2026/01/13/opentelemetry-java-part-6-production/"},"url":"http://localhost:4000/2026/01/13/opentelemetry-java-part-6-production/"}</script>
+<!-- End Jekyll SEO tag -->
+
+    <link rel="stylesheet" href="/assets/main.css">
+    <link rel="alternate" type="application/rss+xml" title="A Dev Writes"
+        href="/feed.xml">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap"
+        rel="stylesheet">
+</head>
+
+<body>
+    <div class="progress-bar" id="progress-bar"></div>
+
+    <header class="site-header">
+        <div class="header-wrapper">
+            <a class="site-title" href="/">A Dev Writes</a>
+            <nav class="site-nav">
+                <a href="/" class="nav-link">Home</a>
+                <a href="/about" class="nav-link">About</a>
+            </nav>
+        </div>
+    </header>
+
+    <main class="page-content">
+        <div class="wrapper">
+            <article class="post h-entry" itemscope itemtype="http://schema.org/BlogPosting">
+  <header class="post-header">
+    
+    <div class="hero-image-container">
+      <img src="/assets/images/otel-part6-hero.png" alt="OpenTelemetry with Java: Part 6 - Production Patterns & The Collector" class="hero-image">
+    </div>
+    
+
+    <h1 class="post-title p-name" itemprop="name headline">OpenTelemetry with Java: Part 6 - Production Patterns &amp; The Collector</h1>
+
+    <div class="post-meta">
+      <div class="author-info">
+        <div class="author-avatar">
+          <span>L</span>
+        </div>
+        <div class="author-details">
+          <span class="author-name">Laxman Sharma</span>
+          <time class="dt-published" datetime="2026-01-13T00:00:00+08:00" itemprop="datePublished">
+            January 13, 2026
+          </time>
+        </div>
+      </div>
+
+      
+      <div class="post-tags">
+        
+        <a href="/tags/#opentelemetry" class="tag">opentelemetry</a>
+        
+        <a href="/tags/#collector" class="tag">collector</a>
+        
+        <a href="/tags/#sampling" class="tag">sampling</a>
+        
+        <a href="/tags/#kubernetes" class="tag">kubernetes</a>
+        
+        <a href="/tags/#production" class="tag">production</a>
+        
+      </div>
+      
+    </div>
+  </header>
+
+  <div class="post-content e-content" itemprop="articleBody">
+    <h1 id="production-patterns--the-collector">Production Patterns &amp; The Collector</h1>
+
+<p><em>Part 6 of a 6-part series on implementing observability in Java microservices</em></p>
+
+<hr />
+
+<p>We’ve built traces, metrics, and logs. But sending telemetry directly from applications to backends doesn’t scale.</p>
+
+<p>Enter the <strong>OpenTelemetry Collector</strong>—the central nervous system of your observability pipeline.</p>
+
+<h2 id="why-you-need-the-collector">Why You Need the Collector</h2>
+
+<p>Direct export from apps:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>App 1 → Jaeger
+App 2 → Jaeger
+App 3 → Jaeger
+</code></pre></div></div>
+
+<p>Problems:</p>
+<ul>
+  <li>Every app needs backend credentials</li>
+  <li>Can’t change backends without app redeployment</li>
+  <li>No centralized sampling or filtering</li>
+  <li>Apps impacted by backend downtime</li>
+</ul>
+
+<p>With the Collector:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>App 1 ─┐
+App 2 ─┼→ Collector → Jaeger
+App 3 ─┘             → Prometheus
+                     → Datadog
+</code></pre></div></div>
+
+<p>Benefits:</p>
+<ul>
+  <li>Single configuration point</li>
+  <li>Apps are insulated from backend changes</li>
+  <li>Centralized sampling and transformation</li>
+  <li>Buffering during backend outages</li>
+</ul>
+
+<h2 id="collector-architecture">Collector Architecture</h2>
+
+<p>The Collector has three main components:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>┌──────────────────────────────────────────────────────┐
+│                  OTel Collector                       │
+│                                                       │
+│  Receivers    →    Processors    →    Exporters      │
+│  (OTLP, Jaeger)    (batch, filter)   (OTLP, Prom)   │
+└──────────────────────────────────────────────────────┘
+</code></pre></div></div>
+
+<ul>
+  <li><strong>Receivers</strong>: Ingest telemetry (OTLP, Jaeger, Zipkin, Kafka)</li>
+  <li><strong>Processors</strong>: Transform, filter, batch, sample</li>
+  <li><strong>Exporters</strong>: Send to backends (Jaeger, Prometheus, vendors)</li>
+</ul>
+
+<h2 id="basic-collector-configuration">Basic Collector Configuration</h2>
+
+<p>Create <code class="language-plaintext highlighter-rouge">otel-collector-config.yaml</code>:</p>
+
+<div class="language-yaml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="na">receivers</span><span class="pi">:</span>
+  <span class="na">otlp</span><span class="pi">:</span>
+    <span class="na">protocols</span><span class="pi">:</span>
+      <span class="na">grpc</span><span class="pi">:</span>
+        <span class="na">endpoint</span><span class="pi">:</span> <span class="s">0.0.0.0:4317</span>
+      <span class="na">http</span><span class="pi">:</span>
+        <span class="na">endpoint</span><span class="pi">:</span> <span class="s">0.0.0.0:4318</span>
+
+<span class="na">processors</span><span class="pi">:</span>
+  <span class="na">batch</span><span class="pi">:</span>
+    <span class="na">timeout</span><span class="pi">:</span> <span class="s">5s</span>
+    <span class="na">send_batch_size</span><span class="pi">:</span> <span class="m">1000</span>
+  
+  <span class="na">resource</span><span class="pi">:</span>
+    <span class="na">attributes</span><span class="pi">:</span>
+      <span class="pi">-</span> <span class="na">key</span><span class="pi">:</span> <span class="s">environment</span>
+        <span class="na">value</span><span class="pi">:</span> <span class="s">production</span>
+        <span class="na">action</span><span class="pi">:</span> <span class="s">insert</span>
+
+<span class="na">exporters</span><span class="pi">:</span>
+  <span class="na">otlp/jaeger</span><span class="pi">:</span>
+    <span class="na">endpoint</span><span class="pi">:</span> <span class="s">jaeger:4317</span>
+    <span class="na">tls</span><span class="pi">:</span>
+      <span class="na">insecure</span><span class="pi">:</span> <span class="kc">true</span>
+  
+  <span class="na">prometheus</span><span class="pi">:</span>
+    <span class="na">endpoint</span><span class="pi">:</span> <span class="s">0.0.0.0:8889</span>
+  
+  <span class="na">logging</span><span class="pi">:</span>
+    <span class="na">verbosity</span><span class="pi">:</span> <span class="s">detailed</span>
+
+<span class="na">service</span><span class="pi">:</span>
+  <span class="na">pipelines</span><span class="pi">:</span>
+    <span class="na">traces</span><span class="pi">:</span>
+      <span class="na">receivers</span><span class="pi">:</span> <span class="pi">[</span><span class="nv">otlp</span><span class="pi">]</span>
+      <span class="na">processors</span><span class="pi">:</span> <span class="pi">[</span><span class="nv">batch</span><span class="pi">,</span> <span class="nv">resource</span><span class="pi">]</span>
+      <span class="na">exporters</span><span class="pi">:</span> <span class="pi">[</span><span class="nv">otlp/jaeger</span><span class="pi">,</span> <span class="nv">logging</span><span class="pi">]</span>
+    
+    <span class="na">metrics</span><span class="pi">:</span>
+      <span class="na">receivers</span><span class="pi">:</span> <span class="pi">[</span><span class="nv">otlp</span><span class="pi">]</span>
+      <span class="na">processors</span><span class="pi">:</span> <span class="pi">[</span><span class="nv">batch</span><span class="pi">,</span> <span class="nv">resource</span><span class="pi">]</span>
+      <span class="na">exporters</span><span class="pi">:</span> <span class="pi">[</span><span class="nv">prometheus</span><span class="pi">]</span>
+    
+    <span class="na">logs</span><span class="pi">:</span>
+      <span class="na">receivers</span><span class="pi">:</span> <span class="pi">[</span><span class="nv">otlp</span><span class="pi">]</span>
+      <span class="na">processors</span><span class="pi">:</span> <span class="pi">[</span><span class="nv">batch</span><span class="pi">]</span>
+      <span class="na">exporters</span><span class="pi">:</span> <span class="pi">[</span><span class="nv">logging</span><span class="pi">]</span>
+</code></pre></div></div>
+
+<h2 id="docker-compose-with-collector">Docker Compose with Collector</h2>
+
+<p>Complete stack:</p>
+
+<div class="language-yaml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="na">version</span><span class="pi">:</span> <span class="s1">'</span><span class="s">3.8'</span>
+<span class="na">services</span><span class="pi">:</span>
+  <span class="na">otel-collector</span><span class="pi">:</span>
+    <span class="na">image</span><span class="pi">:</span> <span class="s">otel/opentelemetry-collector-contrib:0.91.0</span>
+    <span class="na">container_name</span><span class="pi">:</span> <span class="s">otel-collector</span>
+    <span class="na">command</span><span class="pi">:</span> <span class="pi">[</span><span class="s2">"</span><span class="s">--config=/etc/otel-collector-config.yaml"</span><span class="pi">]</span>
+    <span class="na">volumes</span><span class="pi">:</span>
+      <span class="pi">-</span> <span class="s">./otel-collector-config.yaml:/etc/otel-collector-config.yaml</span>
+    <span class="na">ports</span><span class="pi">:</span>
+      <span class="pi">-</span> <span class="s2">"</span><span class="s">4317:4317"</span>   <span class="c1"># OTLP gRPC</span>
+      <span class="pi">-</span> <span class="s2">"</span><span class="s">4318:4318"</span>   <span class="c1"># OTLP HTTP</span>
+      <span class="pi">-</span> <span class="s2">"</span><span class="s">8889:8889"</span>   <span class="c1"># Prometheus metrics</span>
+    <span class="na">depends_on</span><span class="pi">:</span>
+      <span class="pi">-</span> <span class="s">jaeger</span>
+
+  <span class="na">jaeger</span><span class="pi">:</span>
+    <span class="na">image</span><span class="pi">:</span> <span class="s">jaegertracing/all-in-one:1.53</span>
+    <span class="na">ports</span><span class="pi">:</span>
+      <span class="pi">-</span> <span class="s2">"</span><span class="s">16686:16686"</span>
+    <span class="na">environment</span><span class="pi">:</span>
+      <span class="pi">-</span> <span class="s">COLLECTOR_OTLP_ENABLED=true</span>
+
+  <span class="na">prometheus</span><span class="pi">:</span>
+    <span class="na">image</span><span class="pi">:</span> <span class="s">prom/prometheus:v2.48.0</span>
+    <span class="na">ports</span><span class="pi">:</span>
+      <span class="pi">-</span> <span class="s2">"</span><span class="s">9090:9090"</span>
+    <span class="na">volumes</span><span class="pi">:</span>
+      <span class="pi">-</span> <span class="s">./prometheus.yml:/etc/prometheus/prometheus.yml</span>
+
+  <span class="na">grafana</span><span class="pi">:</span>
+    <span class="na">image</span><span class="pi">:</span> <span class="s">grafana/grafana:10.2.0</span>
+    <span class="na">ports</span><span class="pi">:</span>
+      <span class="pi">-</span> <span class="s2">"</span><span class="s">3000:3000"</span>
+</code></pre></div></div>
+
+<p>Now point your apps to the collector:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>java <span class="nt">-javaagent</span>:opentelemetry-javaagent.jar <span class="se">\</span>
+  <span class="nt">-Dotel</span>.service.name<span class="o">=</span>order-service <span class="se">\</span>
+  <span class="nt">-Dotel</span>.exporter.otlp.endpoint<span class="o">=</span>http://localhost:4317 <span class="se">\</span>
+  <span class="nt">-jar</span> order-service.jar
+</code></pre></div></div>
+
+<h2 id="sampling-strategies">Sampling Strategies</h2>
+
+<p>In production, you can’t keep 100% of traces. Sampling reduces costs while preserving visibility.</p>
+
+<h3 id="head-based-sampling">Head-Based Sampling</h3>
+
+<p>Decide at trace start whether to sample:</p>
+
+<div class="language-yaml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="na">processors</span><span class="pi">:</span>
+  <span class="na">probabilistic_sampler</span><span class="pi">:</span>
+    <span class="na">sampling_percentage</span><span class="pi">:</span> <span class="m">10</span>  <span class="c1"># Keep 10% of traces</span>
+</code></pre></div></div>
+
+<p><strong>Pros</strong>: Simple, low overhead<br />
+<strong>Cons</strong>: Might miss interesting traces</p>
+
+<h3 id="tail-based-sampling">Tail-Based Sampling</h3>
+
+<p>Decide after seeing the complete trace:</p>
+
+<div class="language-yaml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="na">processors</span><span class="pi">:</span>
+  <span class="na">tail_sampling</span><span class="pi">:</span>
+    <span class="na">decision_wait</span><span class="pi">:</span> <span class="s">10s</span>
+    <span class="na">policies</span><span class="pi">:</span>
+      <span class="c1"># Always keep errors</span>
+      <span class="pi">-</span> <span class="na">name</span><span class="pi">:</span> <span class="s">errors</span>
+        <span class="na">type</span><span class="pi">:</span> <span class="s">status_code</span>
+        <span class="na">status_code</span><span class="pi">:</span>
+          <span class="na">status_codes</span><span class="pi">:</span> <span class="pi">[</span><span class="nv">ERROR</span><span class="pi">]</span>
+      
+      <span class="c1"># Always keep slow requests</span>
+      <span class="pi">-</span> <span class="na">name</span><span class="pi">:</span> <span class="s">slow-requests</span>
+        <span class="na">type</span><span class="pi">:</span> <span class="s">latency</span>
+        <span class="na">latency</span><span class="pi">:</span>
+          <span class="na">threshold_ms</span><span class="pi">:</span> <span class="m">1000</span>
+      
+      <span class="c1"># Sample 10% of everything else</span>
+      <span class="pi">-</span> <span class="na">name</span><span class="pi">:</span> <span class="s">probabilistic</span>
+        <span class="na">type</span><span class="pi">:</span> <span class="s">probabilistic</span>
+        <span class="na">probabilistic</span><span class="pi">:</span>
+          <span class="na">sampling_percentage</span><span class="pi">:</span> <span class="m">10</span>
+</code></pre></div></div>
+
+<p><strong>Pros</strong>: Keeps interesting traces<br />
+<strong>Cons</strong>: Requires memory, more complex</p>
+
+<h3 id="recommended-strategy">Recommended Strategy</h3>
+
+<div class="language-yaml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="na">policies</span><span class="pi">:</span>
+  <span class="c1"># Keep all errors (critical for debugging)</span>
+  <span class="pi">-</span> <span class="na">name</span><span class="pi">:</span> <span class="s">errors</span>
+    <span class="na">type</span><span class="pi">:</span> <span class="s">status_code</span>
+    <span class="na">status_code</span><span class="pi">:</span>
+      <span class="na">status_codes</span><span class="pi">:</span> <span class="pi">[</span><span class="nv">ERROR</span><span class="pi">]</span>
+  
+  <span class="c1"># Keep slow requests (99th percentile+)</span>
+  <span class="pi">-</span> <span class="na">name</span><span class="pi">:</span> <span class="s">high-latency</span>
+    <span class="na">type</span><span class="pi">:</span> <span class="s">latency</span>
+    <span class="na">latency</span><span class="pi">:</span>
+      <span class="na">threshold_ms</span><span class="pi">:</span> <span class="m">2000</span>
+  
+  <span class="c1"># Sample 5% of successful fast requests</span>
+  <span class="pi">-</span> <span class="na">name</span><span class="pi">:</span> <span class="s">baseline</span>
+    <span class="na">type</span><span class="pi">:</span> <span class="s">probabilistic</span>
+    <span class="na">probabilistic</span><span class="pi">:</span>
+      <span class="na">sampling_percentage</span><span class="pi">:</span> <span class="m">5</span>
+</code></pre></div></div>
+
+<h2 id="multi-backend-export">Multi-Backend Export</h2>
+
+<p>Send to multiple destinations:</p>
+
+<div class="language-yaml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="na">exporters</span><span class="pi">:</span>
+  <span class="c1"># Open source backends</span>
+  <span class="na">otlp/jaeger</span><span class="pi">:</span>
+    <span class="na">endpoint</span><span class="pi">:</span> <span class="s">jaeger:4317</span>
+  
+  <span class="na">prometheus</span><span class="pi">:</span>
+    <span class="na">endpoint</span><span class="pi">:</span> <span class="s">0.0.0.0:8889</span>
+  
+  <span class="c1"># Vendor backend</span>
+  <span class="na">otlp/datadog</span><span class="pi">:</span>
+    <span class="na">endpoint</span><span class="pi">:</span> <span class="s">https://otel.datadoghq.com:4317</span>
+    <span class="na">headers</span><span class="pi">:</span>
+      <span class="na">DD-API-KEY</span><span class="pi">:</span> <span class="s2">"</span><span class="s">${DD_API_KEY}"</span>
+
+<span class="na">service</span><span class="pi">:</span>
+  <span class="na">pipelines</span><span class="pi">:</span>
+    <span class="na">traces</span><span class="pi">:</span>
+      <span class="na">receivers</span><span class="pi">:</span> <span class="pi">[</span><span class="nv">otlp</span><span class="pi">]</span>
+      <span class="na">processors</span><span class="pi">:</span> <span class="pi">[</span><span class="nv">batch</span><span class="pi">]</span>
+      <span class="na">exporters</span><span class="pi">:</span> <span class="pi">[</span><span class="nv">otlp/jaeger</span><span class="pi">,</span> <span class="nv">otlp/datadog</span><span class="pi">]</span>
+</code></pre></div></div>
+
+<h2 id="kubernetes-deployment-patterns">Kubernetes Deployment Patterns</h2>
+
+<h3 id="sidecar-pattern">Sidecar Pattern</h3>
+
+<p>One collector per pod:</p>
+
+<div class="language-yaml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="na">apiVersion</span><span class="pi">:</span> <span class="s">apps/v1</span>
+<span class="na">kind</span><span class="pi">:</span> <span class="s">Deployment</span>
+<span class="na">spec</span><span class="pi">:</span>
+  <span class="na">template</span><span class="pi">:</span>
+    <span class="na">spec</span><span class="pi">:</span>
+      <span class="na">containers</span><span class="pi">:</span>
+        <span class="pi">-</span> <span class="na">name</span><span class="pi">:</span> <span class="s">app</span>
+          <span class="na">image</span><span class="pi">:</span> <span class="s">order-service:latest</span>
+          <span class="na">env</span><span class="pi">:</span>
+            <span class="pi">-</span> <span class="na">name</span><span class="pi">:</span> <span class="s">OTEL_EXPORTER_OTLP_ENDPOINT</span>
+              <span class="na">value</span><span class="pi">:</span> <span class="s2">"</span><span class="s">http://localhost:4317"</span>
+        
+        <span class="pi">-</span> <span class="na">name</span><span class="pi">:</span> <span class="s">otel-collector</span>
+          <span class="na">image</span><span class="pi">:</span> <span class="s">otel/opentelemetry-collector:0.91.0</span>
+          <span class="na">ports</span><span class="pi">:</span>
+            <span class="pi">-</span> <span class="na">containerPort</span><span class="pi">:</span> <span class="m">4317</span>
+</code></pre></div></div>
+
+<p><strong>Pros</strong>: Isolation, per-app config<br />
+<strong>Cons</strong>: Resource overhead</p>
+
+<h3 id="daemonset-pattern">DaemonSet Pattern</h3>
+
+<p>One collector per node:</p>
+
+<div class="language-yaml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="na">apiVersion</span><span class="pi">:</span> <span class="s">apps/v1</span>
+<span class="na">kind</span><span class="pi">:</span> <span class="s">DaemonSet</span>
+<span class="na">metadata</span><span class="pi">:</span>
+  <span class="na">name</span><span class="pi">:</span> <span class="s">otel-collector</span>
+<span class="na">spec</span><span class="pi">:</span>
+  <span class="na">selector</span><span class="pi">:</span>
+    <span class="na">matchLabels</span><span class="pi">:</span>
+      <span class="na">app</span><span class="pi">:</span> <span class="s">otel-collector</span>
+  <span class="na">template</span><span class="pi">:</span>
+    <span class="na">spec</span><span class="pi">:</span>
+      <span class="na">containers</span><span class="pi">:</span>
+        <span class="pi">-</span> <span class="na">name</span><span class="pi">:</span> <span class="s">otel-collector</span>
+          <span class="na">image</span><span class="pi">:</span> <span class="s">otel/opentelemetry-collector:0.91.0</span>
+          <span class="na">ports</span><span class="pi">:</span>
+            <span class="pi">-</span> <span class="na">containerPort</span><span class="pi">:</span> <span class="m">4317</span>
+              <span class="na">hostPort</span><span class="pi">:</span> <span class="m">4317</span>
+</code></pre></div></div>
+
+<p><strong>Pros</strong>: Lower resource usage<br />
+<strong>Cons</strong>: Shared config, noisy neighbor risk</p>
+
+<h3 id="gateway-pattern">Gateway Pattern</h3>
+
+<p>Central collector deployment:</p>
+
+<div class="language-yaml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="na">apiVersion</span><span class="pi">:</span> <span class="s">apps/v1</span>
+<span class="na">kind</span><span class="pi">:</span> <span class="s">Deployment</span>
+<span class="na">metadata</span><span class="pi">:</span>
+  <span class="na">name</span><span class="pi">:</span> <span class="s">otel-collector-gateway</span>
+<span class="na">spec</span><span class="pi">:</span>
+  <span class="na">replicas</span><span class="pi">:</span> <span class="m">3</span>
+  <span class="na">template</span><span class="pi">:</span>
+    <span class="na">spec</span><span class="pi">:</span>
+      <span class="na">containers</span><span class="pi">:</span>
+        <span class="pi">-</span> <span class="na">name</span><span class="pi">:</span> <span class="s">otel-collector</span>
+          <span class="na">image</span><span class="pi">:</span> <span class="s">otel/opentelemetry-collector:0.91.0</span>
+</code></pre></div></div>
+
+<p><strong>Pros</strong>: Centralized, easy to manage<br />
+<strong>Cons</strong>: Single point of failure (mitigate with HA)</p>
+
+<h2 id="resource-attributes">Resource Attributes</h2>
+
+<p>Enrich all telemetry with context:</p>
+
+<div class="language-yaml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="na">processors</span><span class="pi">:</span>
+  <span class="na">resource</span><span class="pi">:</span>
+    <span class="na">attributes</span><span class="pi">:</span>
+      <span class="pi">-</span> <span class="na">key</span><span class="pi">:</span> <span class="s">deployment.environment</span>
+        <span class="na">value</span><span class="pi">:</span> <span class="s">production</span>
+        <span class="na">action</span><span class="pi">:</span> <span class="s">insert</span>
+      <span class="pi">-</span> <span class="na">key</span><span class="pi">:</span> <span class="s">service.namespace</span>
+        <span class="na">value</span><span class="pi">:</span> <span class="s">ecommerce</span>
+        <span class="na">action</span><span class="pi">:</span> <span class="s">insert</span>
+      <span class="pi">-</span> <span class="na">key</span><span class="pi">:</span> <span class="s">k8s.cluster.name</span>
+        <span class="na">value</span><span class="pi">:</span> <span class="s">prod-us-east-1</span>
+        <span class="na">action</span><span class="pi">:</span> <span class="s">insert</span>
+</code></pre></div></div>
+
+<p>Or use the resource detection processor:</p>
+
+<div class="language-yaml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="na">processors</span><span class="pi">:</span>
+  <span class="na">resourcedetection</span><span class="pi">:</span>
+    <span class="na">detectors</span><span class="pi">:</span> <span class="pi">[</span><span class="nv">env</span><span class="pi">,</span> <span class="nv">system</span><span class="pi">,</span> <span class="nv">docker</span><span class="pi">,</span> <span class="nv">gcp</span><span class="pi">,</span> <span class="nv">aws</span><span class="pi">,</span> <span class="nv">azure</span><span class="pi">]</span>
+</code></pre></div></div>
+
+<h2 id="common-pitfalls">Common Pitfalls</h2>
+
+<h3 id="1-missing-tls-in-production">1. Missing TLS in Production</h3>
+
+<div class="language-yaml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># Bad - insecure in production</span>
+<span class="na">exporters</span><span class="pi">:</span>
+  <span class="na">otlp</span><span class="pi">:</span>
+    <span class="na">endpoint</span><span class="pi">:</span> <span class="s">collector:4317</span>
+    <span class="na">tls</span><span class="pi">:</span>
+      <span class="na">insecure</span><span class="pi">:</span> <span class="kc">true</span>
+
+<span class="c1"># Good - proper TLS</span>
+<span class="na">exporters</span><span class="pi">:</span>
+  <span class="na">otlp</span><span class="pi">:</span>
+    <span class="na">endpoint</span><span class="pi">:</span> <span class="s">collector:4317</span>
+    <span class="na">tls</span><span class="pi">:</span>
+      <span class="na">cert_file</span><span class="pi">:</span> <span class="s">/certs/client.crt</span>
+      <span class="na">key_file</span><span class="pi">:</span> <span class="s">/certs/client.key</span>
+</code></pre></div></div>
+
+<h3 id="2-no-memory-limits">2. No Memory Limits</h3>
+
+<div class="language-yaml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># Add memory limiting</span>
+<span class="na">processors</span><span class="pi">:</span>
+  <span class="na">memory_limiter</span><span class="pi">:</span>
+    <span class="na">check_interval</span><span class="pi">:</span> <span class="s">1s</span>
+    <span class="na">limit_mib</span><span class="pi">:</span> <span class="m">512</span>
+    <span class="na">spike_limit_mib</span><span class="pi">:</span> <span class="m">128</span>
+</code></pre></div></div>
+
+<h3 id="3-no-retry-on-failure">3. No Retry on Failure</h3>
+
+<div class="language-yaml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="na">exporters</span><span class="pi">:</span>
+  <span class="na">otlp</span><span class="pi">:</span>
+    <span class="na">endpoint</span><span class="pi">:</span> <span class="s">backend:4317</span>
+    <span class="na">retry_on_failure</span><span class="pi">:</span>
+      <span class="na">enabled</span><span class="pi">:</span> <span class="kc">true</span>
+      <span class="na">initial_interval</span><span class="pi">:</span> <span class="s">5s</span>
+      <span class="na">max_interval</span><span class="pi">:</span> <span class="s">30s</span>
+</code></pre></div></div>
+
+<h2 id="final-architecture">Final Architecture</h2>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>┌─────────────────────────────────────────────────────────────────┐
+│                     Kubernetes Cluster                          │
+│                                                                  │
+│  ┌──────────┐ ┌──────────┐ ┌──────────┐                        │
+│  │ Order    │ │Inventory │ │ Payment  │  Applications           │
+│  │ Service  │ │ Service  │ │ Service  │  (with OTel Agent)      │
+│  └────┬─────┘ └────┬─────┘ └────┬─────┘                        │
+│       │            │            │                               │
+│       └────────────┼────────────┘                               │
+│                    │ OTLP                                       │
+│                    ▼                                            │
+│            ┌──────────────┐                                     │
+│            │    OTel      │  Collector                          │
+│            │  Collector   │  (sampling, batching, routing)      │
+│            └──────┬───────┘                                     │
+│                   │                                             │
+│     ┌─────────────┼─────────────┐                              │
+│     ▼             ▼             ▼                              │
+│ ┌────────┐  ┌──────────┐  ┌─────────┐                         │
+│ │ Jaeger │  │Prometheus│  │ Grafana │  Backends                │
+│ │(traces)│  │(metrics) │  │ (viz)   │                         │
+│ └────────┘  └──────────┘  └─────────┘                         │
+└─────────────────────────────────────────────────────────────────┘
+</code></pre></div></div>
+
+<h2 id="series-recap">Series Recap</h2>
+
+<p>We’ve covered the complete journey:</p>
+
+<ol>
+  <li><strong>Fundamentals</strong>: Traces, metrics, logs, OTel architecture</li>
+  <li><strong>Auto-Instrumentation</strong>: Zero-code tracing with Java Agent</li>
+  <li><strong>Custom Instrumentation</strong>: Business context with spans &amp; attributes</li>
+  <li><strong>Metrics</strong>: Counters, gauges, histograms, Grafana dashboards</li>
+  <li><strong>Logs</strong>: Trace correlation, structured logging</li>
+  <li><strong>Production</strong>: Collector, sampling, Kubernetes patterns</li>
+</ol>
+
+<p>You now have everything needed to implement production-grade observability in your Java microservices.</p>
+
+<hr />
+
+<p><em>Previous: <a href="/2026/01/12/opentelemetry-java-part-5-logs/">Part 5 - Logs in Context</a></em></p>
+
+<hr />
+
+<h2 id="resources">Resources</h2>
+
+<ul>
+  <li><a href="https://opentelemetry.io/docs/collector/">OTel Collector Docs</a></li>
+  <li><a href="https://opentelemetry.io/docs/collector/configuration/">Collector Configuration</a></li>
+  <li><a href="https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/processor/tailsamplingprocessor">Tail Sampling Processor</a></li>
+  <li><a href="https://github.com/open-telemetry/opentelemetry-operator">Kubernetes Operator</a></li>
+</ul>
+
+  </div>
+
+  <footer class="post-footer">
+    <div class="post-nav">
+      
+      <a href="/2026/01/12/opentelemetry-java-part-5-logs/" class="nav-link prev">
+        <span class="nav-label">← Previous</span>
+        <span class="nav-title">OpenTelemetry with Java: Part 5 - Logs in Context</span>
+      </a>
+      
+      
+      <a href="/2026/01/14/welcome/" class="nav-link next">
+        <span class="nav-label">Next →</span>
+        <span class="nav-title">Welcome to A Dev Writes</span>
+      </a>
+      
+    </div>
+  </footer>
+</article>
+        </div>
+    </main>
+
+    <footer class="site-footer">
+        <div class="footer-wrapper">
+            <p>&copy; 2026 {"name" => "Laxman Sharma"}. All rights reserved.</p>
+            <div class="social-links">
+                <a href="https://github.com/laxman-sharma" target="_blank" rel="noopener noreferrer">GitHub</a>
+                <a href="https://www.linkedin.com/in/laxman-sharma-328b2659" target="_blank"
+                    rel="noopener noreferrer">LinkedIn</a>
+                <a href="https://www.toptal.com/resume/laxman-sharma" target="_blank"
+                    rel="noopener noreferrer">Toptal</a>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Reading progress bar
+        window.addEventListener('scroll', () => {
+            const winScroll = document.body.scrollTop || document.documentElement.scrollTop;
+            const height = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+            const scrolled = (winScroll / height) * 100;
+            document.getElementById('progress-bar').style.width = scrolled + '%';
+        });
+    </script>
+</body>
+
+</html>

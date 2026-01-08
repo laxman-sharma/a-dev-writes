@@ -2,20 +2,114 @@
 layout: default
 ---
 <div class="home">
-    <section class="hero">
-        <h1 class="hero-title">{{ site.title }}</h1>
-        <p class="hero-subtitle">{{ site.description }}</p>
+    <!-- Hero Featured Banner -->
+    {% assign featured = site.posts | first %}
+    <section class="hero-featured">
+        {% if featured.image %}
+        <div class="hero-background" style="background-image: url('{{ featured.image | relative_url }}');"></div>
+        <div class="hero-overlay"></div>
+        {% endif %}
+
+        <div class="hero-content-wrapper">
+            <span class="hero-badge">Featured Article</span>
+            <h1 class="hero-post-title">
+                <a href="{{ featured.url | relative_url }}">{{ featured.title | escape }}</a>
+            </h1>
+            <div class="hero-meta">
+                <time datetime="{{ featured.date | date_to_xmlschema }}">{{ featured.date | date: "%B %-d, %Y" }}</time>
+                <span class="separator">•</span>
+                {% if featured.categories.size > 0 %}
+                <span class="category">{{ featured.categories | first }}</span>
+                {% endif %}
+            </div>
+            <p class="hero-excerpt">{{ featured.excerpt | strip_html | truncatewords: 40 }}</p>
+            <a href="{{ featured.url | relative_url }}" class="hero-btn">
+                Read Article <span>→</span>
+            </a>
+        </div>
     </section>
 
-    <section class="posts-section">
-        <h2 class="section-title">Recent Articles</h2>
+    <!-- OpenTelemetry Series Carousel -->
+    {% assign otel_posts = site.posts | where_exp: "post", "post.tags contains 'opentelemetry'" | sort: 'date' %}
+    {% if otel_posts.size > 1 %}
+    <section class="series-section">
+        <h2 class="section-title">
+            <a href="{{ '/tags/' | relative_url }}#opentelemetry" style="color: inherit; text-decoration: none;">
+                <span class="title-icon">📚</span> OpenTelemetry with Java Series
+            </a>
+        </h2>
+        <div class="series-carousel-wrapper">
+            <button class="carousel-btn prev" onclick="scrollCarousel(-1)" aria-label="Previous">‹</button>
+            <div class="series-carousel" id="series-carousel">
+                {% for post in otel_posts %}
+                <article class="series-card">
+                    <div class="series-card-number">Part {{ forloop.index }}</div>
+                    {% if post.image %}
+                    <div class="series-card-image">
+                        <a href="{{ post.url | relative_url }}">
+                            <img src="{{ post.image | relative_url }}" alt="{{ post.title }}">
+                        </a>
+                    </div>
+                    {% endif %}
+                    <div class="series-card-content">
+                        <h4 class="series-card-title">
+                            <a href="{{ post.url | relative_url }}">{{ post.title | remove: "OpenTelemetry with Java: "
+                                | escape }}</a>
+                        </h4>
+                    </div>
+                </article>
+                {% endfor %}
+            </div>
+            <button class="carousel-btn next" onclick="scrollCarousel(1)" aria-label="Next">›</button>
+        </div>
+    </section>
+    {% endif %}
 
-        <div class="post-list">
+    <!-- Tag Cloud -->
+    {% assign all_tags = "" | split: "" %}
+    {% for post in site.posts %}
+    {% for tag in post.tags %}
+    {% unless all_tags contains tag %}
+    {% assign all_tags = all_tags | push: tag %}
+    {% endunless %}
+    {% endfor %}
+    {% endfor %}
+
+    <section class="tags-section">
+        <h2 class="section-title">
+            <span class="title-icon">🏷️</span> Browse by Topic
+        </h2>
+        <div class="tag-cloud">
+            {% for tag in all_tags %}
+            <a href="{{ '/tags/' | relative_url }}#{{ tag | slugify }}" class="tag-link">
+                {{ tag }}
+                {% assign count = 0 %}
+                {% for post in site.posts %}
+                {% if post.tags contains tag %}
+                {% assign count = count | plus: 1 %}
+                {% endif %}
+                {% endfor %}
+                <span class="tag-count">{{ count }}</span>
+            </a>
+            {% endfor %}
+        </div>
+    </section>
+
+    <!-- Recent Articles -->
+    <section class="posts-section">
+        <h2 class="section-title">
+            <span class="title-icon">📝</span> All Articles
+        </h2>
+
+        <div class="post-grid">
             {% for post in site.posts %}
+            {% unless post.url == featured.url %}
             <article class="post-card">
                 {% if post.image %}
                 <div class="post-card-image">
-                    <img src="{{ post.image | relative_url }}" alt="{{ post.title }}">
+                    <a href="{{ post.url | relative_url }}">
+                        <img src="{{ post.image | relative_url }}" alt="{{ post.title }}">
+                    </a>
                 </div>
                 {% endif %}
                 <div class="post-card-content">
@@ -28,15 +122,24 @@ layout: default
                     <h3 class="post-card-title">
                         <a href="{{ post.url | relative_url }}">{{ post.title | escape }}</a>
                     </h3>
-                    <p class="post-card-excerpt">{{ post.excerpt | strip_html | truncatewords: 30 }}</p>
+                    <p class="post-card-excerpt">{{ post.excerpt | strip_html | truncatewords: 20 }}</p>
                     <div class="post-card-tags">
                         {% for tag in post.tags limit:3 %}
-                        <span class="tag">{{ tag }}</span>
+                        <a href="{{ '/tags/' | relative_url }}#{{ tag | slugify }}" class="tag">{{ tag }}</a>
                         {% endfor %}
                     </div>
                 </div>
             </article>
+            {% endunless %}
             {% endfor %}
         </div>
     </section>
 </div>
+
+<script>
+    function scrollCarousel(direction) {
+        const carousel = document.getElementById('series-carousel');
+        const scrollAmount = 320;
+        carousel.scrollBy({ left: direction * scrollAmount, behavior: 'smooth' });
+    }
+</script>

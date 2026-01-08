@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- Begin Jekyll SEO tag v2.8.0 -->
+<title>OpenTelemetry with Java: Part 4 - Metrics That Matter | A Dev Writes</title>
+<meta name="generator" content="Jekyll v4.4.1" />
+<meta property="og:title" content="OpenTelemetry with Java: Part 4 - Metrics That Matter" />
+<meta name="author" content="Laxman Sharma" />
+<meta property="og:locale" content="en_US" />
+<meta name="description" content="Learn to add custom application metrics alongside traces. We’ll cover counters, gauges, histograms and build a Grafana dashboard." />
+<meta property="og:description" content="Learn to add custom application metrics alongside traces. We’ll cover counters, gauges, histograms and build a Grafana dashboard." />
+<link rel="canonical" href="http://localhost:4000/2026/01/11/opentelemetry-java-part-4-metrics/" />
+<meta property="og:url" content="http://localhost:4000/2026/01/11/opentelemetry-java-part-4-metrics/" />
+<meta property="og:site_name" content="A Dev Writes" />
+<meta property="og:image" content="http://localhost:4000/assets/images/otel-part4-hero.png" />
+<meta property="og:type" content="article" />
+<meta property="article:published_time" content="2026-01-11T00:00:00+08:00" />
+<meta name="twitter:card" content="summary_large_image" />
+<meta property="twitter:image" content="http://localhost:4000/assets/images/otel-part4-hero.png" />
+<meta property="twitter:title" content="OpenTelemetry with Java: Part 4 - Metrics That Matter" />
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"BlogPosting","author":{"@type":"Person","name":"Laxman Sharma"},"dateModified":"2026-01-11T00:00:00+08:00","datePublished":"2026-01-11T00:00:00+08:00","description":"Learn to add custom application metrics alongside traces. We’ll cover counters, gauges, histograms and build a Grafana dashboard.","headline":"OpenTelemetry with Java: Part 4 - Metrics That Matter","image":"http://localhost:4000/assets/images/otel-part4-hero.png","mainEntityOfPage":{"@type":"WebPage","@id":"http://localhost:4000/2026/01/11/opentelemetry-java-part-4-metrics/"},"url":"http://localhost:4000/2026/01/11/opentelemetry-java-part-4-metrics/"}</script>
+<!-- End Jekyll SEO tag -->
+
+    <link rel="stylesheet" href="/assets/main.css">
+    <link rel="alternate" type="application/rss+xml" title="A Dev Writes"
+        href="/feed.xml">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap"
+        rel="stylesheet">
+</head>
+
+<body>
+    <div class="progress-bar" id="progress-bar"></div>
+
+    <header class="site-header">
+        <div class="header-wrapper">
+            <a class="site-title" href="/">A Dev Writes</a>
+            <nav class="site-nav">
+                <a href="/" class="nav-link">Home</a>
+                <a href="/about" class="nav-link">About</a>
+            </nav>
+        </div>
+    </header>
+
+    <main class="page-content">
+        <div class="wrapper">
+            <article class="post h-entry" itemscope itemtype="http://schema.org/BlogPosting">
+  <header class="post-header">
+    
+    <div class="hero-image-container">
+      <img src="/assets/images/otel-part4-hero.png" alt="OpenTelemetry with Java: Part 4 - Metrics That Matter" class="hero-image">
+    </div>
+    
+
+    <h1 class="post-title p-name" itemprop="name headline">OpenTelemetry with Java: Part 4 - Metrics That Matter</h1>
+
+    <div class="post-meta">
+      <div class="author-info">
+        <div class="author-avatar">
+          <span>L</span>
+        </div>
+        <div class="author-details">
+          <span class="author-name">Laxman Sharma</span>
+          <time class="dt-published" datetime="2026-01-11T00:00:00+08:00" itemprop="datePublished">
+            January 11, 2026
+          </time>
+        </div>
+      </div>
+
+      
+      <div class="post-tags">
+        
+        <a href="/tags/#opentelemetry" class="tag">opentelemetry</a>
+        
+        <a href="/tags/#metrics" class="tag">metrics</a>
+        
+        <a href="/tags/#prometheus" class="tag">prometheus</a>
+        
+        <a href="/tags/#grafana" class="tag">grafana</a>
+        
+        <a href="/tags/#monitoring" class="tag">monitoring</a>
+        
+      </div>
+      
+    </div>
+  </header>
+
+  <div class="post-content e-content" itemprop="articleBody">
+    <h1 id="metrics-that-matter">Metrics That Matter</h1>
+
+<p><em>Part 4 of a 6-part series on implementing observability in Java microservices</em></p>
+
+<hr />
+
+<p>Traces tell you <strong>what happened</strong> to a single request. Metrics tell you <strong>what’s happening</strong> across all requests. Together, they give you complete observability.</p>
+
+<p>In this article, we’ll add custom metrics to our microservices using OpenTelemetry, export them to Prometheus, and visualize them in Grafana.</p>
+
+<h2 id="understanding-metric-types">Understanding Metric Types</h2>
+
+<p>OpenTelemetry supports three primary metric instruments:</p>
+
+<h3 id="1-counter">1. Counter</h3>
+
+<p>Counters only go up. Perfect for counting events.</p>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">// Examples: request count, orders created, errors</span>
+<span class="nc">LongCounter</span> <span class="n">requestCounter</span> <span class="o">=</span> <span class="n">meter</span><span class="o">.</span><span class="na">counterBuilder</span><span class="o">(</span><span class="s">"http.requests"</span><span class="o">)</span>
+    <span class="o">.</span><span class="na">setDescription</span><span class="o">(</span><span class="s">"Total HTTP requests"</span><span class="o">)</span>
+    <span class="o">.</span><span class="na">build</span><span class="o">();</span>
+
+<span class="n">requestCounter</span><span class="o">.</span><span class="na">add</span><span class="o">(</span><span class="mi">1</span><span class="o">);</span>
+</code></pre></div></div>
+
+<h3 id="2-gauge">2. Gauge</h3>
+
+<p>Gauges represent current values that can go up or down.</p>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">// Examples: active connections, queue size, memory usage</span>
+<span class="n">meter</span><span class="o">.</span><span class="na">gaugeBuilder</span><span class="o">(</span><span class="s">"connection.pool.active"</span><span class="o">)</span>
+    <span class="o">.</span><span class="na">setDescription</span><span class="o">(</span><span class="s">"Active database connections"</span><span class="o">)</span>
+    <span class="o">.</span><span class="na">buildWithCallback</span><span class="o">(</span><span class="n">measurement</span> <span class="o">-&gt;</span> <span class="o">{</span>
+        <span class="n">measurement</span><span class="o">.</span><span class="na">record</span><span class="o">(</span><span class="n">connectionPool</span><span class="o">.</span><span class="na">getActiveCount</span><span class="o">());</span>
+    <span class="o">});</span>
+</code></pre></div></div>
+
+<h3 id="3-histogram">3. Histogram</h3>
+
+<p>Histograms capture value distributions—essential for latency percentiles.</p>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">// Examples: request duration, response size</span>
+<span class="nc">DoubleHistogram</span> <span class="n">latencyHistogram</span> <span class="o">=</span> <span class="n">meter</span><span class="o">.</span><span class="na">histogramBuilder</span><span class="o">(</span><span class="s">"http.request.duration"</span><span class="o">)</span>
+    <span class="o">.</span><span class="na">setDescription</span><span class="o">(</span><span class="s">"Request latency"</span><span class="o">)</span>
+    <span class="o">.</span><span class="na">setUnit</span><span class="o">(</span><span class="s">"ms"</span><span class="o">)</span>
+    <span class="o">.</span><span class="na">build</span><span class="o">();</span>
+
+<span class="n">latencyHistogram</span><span class="o">.</span><span class="na">record</span><span class="o">(</span><span class="n">responseTime</span><span class="o">);</span>
+</code></pre></div></div>
+
+<h2 id="setting-up-metrics-collection">Setting Up Metrics Collection</h2>
+
+<h3 id="add-dependencies">Add Dependencies</h3>
+
+<div class="language-xml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nt">&lt;dependency&gt;</span>
+    <span class="nt">&lt;groupId&gt;</span>io.opentelemetry<span class="nt">&lt;/groupId&gt;</span>
+    <span class="nt">&lt;artifactId&gt;</span>opentelemetry-api<span class="nt">&lt;/artifactId&gt;</span>
+    <span class="nt">&lt;version&gt;</span>1.34.0<span class="nt">&lt;/version&gt;</span>
+<span class="nt">&lt;/dependency&gt;</span>
+</code></pre></div></div>
+
+<h3 id="update-docker-compose">Update Docker Compose</h3>
+
+<p>Add Prometheus and Grafana to your stack:</p>
+
+<div class="language-yaml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="na">version</span><span class="pi">:</span> <span class="s1">'</span><span class="s">3.8'</span>
+<span class="na">services</span><span class="pi">:</span>
+  <span class="na">jaeger</span><span class="pi">:</span>
+    <span class="na">image</span><span class="pi">:</span> <span class="s">jaegertracing/all-in-one:1.53</span>
+    <span class="na">ports</span><span class="pi">:</span>
+      <span class="pi">-</span> <span class="s2">"</span><span class="s">16686:16686"</span>
+      <span class="pi">-</span> <span class="s2">"</span><span class="s">4317:4317"</span>
+    <span class="na">environment</span><span class="pi">:</span>
+      <span class="pi">-</span> <span class="s">COLLECTOR_OTLP_ENABLED=true</span>
+
+  <span class="na">prometheus</span><span class="pi">:</span>
+    <span class="na">image</span><span class="pi">:</span> <span class="s">prom/prometheus:v2.48.0</span>
+    <span class="na">ports</span><span class="pi">:</span>
+      <span class="pi">-</span> <span class="s2">"</span><span class="s">9090:9090"</span>
+    <span class="na">volumes</span><span class="pi">:</span>
+      <span class="pi">-</span> <span class="s">./prometheus.yml:/etc/prometheus/prometheus.yml</span>
+    <span class="na">command</span><span class="pi">:</span>
+      <span class="pi">-</span> <span class="s1">'</span><span class="s">--config.file=/etc/prometheus/prometheus.yml'</span>
+
+  <span class="na">grafana</span><span class="pi">:</span>
+    <span class="na">image</span><span class="pi">:</span> <span class="s">grafana/grafana:10.2.0</span>
+    <span class="na">ports</span><span class="pi">:</span>
+      <span class="pi">-</span> <span class="s2">"</span><span class="s">3000:3000"</span>
+    <span class="na">environment</span><span class="pi">:</span>
+      <span class="pi">-</span> <span class="s">GF_SECURITY_ADMIN_PASSWORD=admin</span>
+</code></pre></div></div>
+
+<h3 id="prometheus-configuration">Prometheus Configuration</h3>
+
+<p>Create <code class="language-plaintext highlighter-rouge">prometheus.yml</code>:</p>
+
+<div class="language-yaml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="na">global</span><span class="pi">:</span>
+  <span class="na">scrape_interval</span><span class="pi">:</span> <span class="s">15s</span>
+
+<span class="na">scrape_configs</span><span class="pi">:</span>
+  <span class="pi">-</span> <span class="na">job_name</span><span class="pi">:</span> <span class="s1">'</span><span class="s">order-service'</span>
+    <span class="na">static_configs</span><span class="pi">:</span>
+      <span class="pi">-</span> <span class="na">targets</span><span class="pi">:</span> <span class="pi">[</span><span class="s1">'</span><span class="s">host.docker.internal:8080'</span><span class="pi">]</span>
+  
+  <span class="pi">-</span> <span class="na">job_name</span><span class="pi">:</span> <span class="s1">'</span><span class="s">inventory-service'</span>
+    <span class="na">static_configs</span><span class="pi">:</span>
+      <span class="pi">-</span> <span class="na">targets</span><span class="pi">:</span> <span class="pi">[</span><span class="s1">'</span><span class="s">host.docker.internal:8081'</span><span class="pi">]</span>
+  
+  <span class="pi">-</span> <span class="na">job_name</span><span class="pi">:</span> <span class="s1">'</span><span class="s">payment-service'</span>
+    <span class="na">static_configs</span><span class="pi">:</span>
+      <span class="pi">-</span> <span class="na">targets</span><span class="pi">:</span> <span class="pi">[</span><span class="s1">'</span><span class="s">host.docker.internal:8082'</span><span class="pi">]</span>
+</code></pre></div></div>
+
+<h3 id="enable-metrics-export">Enable Metrics Export</h3>
+
+<p>Run your services with metrics exporter:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>java <span class="nt">-javaagent</span>:opentelemetry-javaagent.jar <span class="se">\</span>
+  <span class="nt">-Dotel</span>.service.name<span class="o">=</span>order-service <span class="se">\</span>
+  <span class="nt">-Dotel</span>.metrics.exporter<span class="o">=</span>prometheus <span class="se">\</span>
+  <span class="nt">-Dotel</span>.exporter.prometheus.port<span class="o">=</span>8080 <span class="se">\</span>
+  <span class="nt">-jar</span> order-service.jar
+</code></pre></div></div>
+
+<h2 id="creating-custom-metrics">Creating Custom Metrics</h2>
+
+<p>Here’s a complete example with all three metric types:</p>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nd">@Service</span>
+<span class="kd">public</span> <span class="kd">class</span> <span class="nc">OrderMetrics</span> <span class="o">{</span>
+    
+    <span class="kd">private</span> <span class="kd">final</span> <span class="nc">Meter</span> <span class="n">meter</span><span class="o">;</span>
+    <span class="kd">private</span> <span class="kd">final</span> <span class="nc">LongCounter</span> <span class="n">ordersCreated</span><span class="o">;</span>
+    <span class="kd">private</span> <span class="kd">final</span> <span class="nc">LongCounter</span> <span class="n">ordersFailed</span><span class="o">;</span>
+    <span class="kd">private</span> <span class="kd">final</span> <span class="nc">DoubleHistogram</span> <span class="n">orderValue</span><span class="o">;</span>
+    <span class="kd">private</span> <span class="kd">final</span> <span class="nc">AtomicLong</span> <span class="n">activeOrders</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">AtomicLong</span><span class="o">(</span><span class="mi">0</span><span class="o">);</span>
+    
+    <span class="kd">public</span> <span class="nf">OrderMetrics</span><span class="o">()</span> <span class="o">{</span>
+        <span class="k">this</span><span class="o">.</span><span class="na">meter</span> <span class="o">=</span> <span class="nc">GlobalOpenTelemetry</span><span class="o">.</span><span class="na">getMeter</span><span class="o">(</span><span class="s">"order-service"</span><span class="o">);</span>
+        
+        <span class="c1">// Counter: Orders created</span>
+        <span class="k">this</span><span class="o">.</span><span class="na">ordersCreated</span> <span class="o">=</span> <span class="n">meter</span><span class="o">.</span><span class="na">counterBuilder</span><span class="o">(</span><span class="s">"orders.created"</span><span class="o">)</span>
+            <span class="o">.</span><span class="na">setDescription</span><span class="o">(</span><span class="s">"Total orders created"</span><span class="o">)</span>
+            <span class="o">.</span><span class="na">setUnit</span><span class="o">(</span><span class="s">"1"</span><span class="o">)</span>
+            <span class="o">.</span><span class="na">build</span><span class="o">();</span>
+        
+        <span class="c1">// Counter: Failed orders</span>
+        <span class="k">this</span><span class="o">.</span><span class="na">ordersFailed</span> <span class="o">=</span> <span class="n">meter</span><span class="o">.</span><span class="na">counterBuilder</span><span class="o">(</span><span class="s">"orders.failed"</span><span class="o">)</span>
+            <span class="o">.</span><span class="na">setDescription</span><span class="o">(</span><span class="s">"Total failed orders"</span><span class="o">)</span>
+            <span class="o">.</span><span class="na">setUnit</span><span class="o">(</span><span class="s">"1"</span><span class="o">)</span>
+            <span class="o">.</span><span class="na">build</span><span class="o">();</span>
+        
+        <span class="c1">// Histogram: Order values</span>
+        <span class="k">this</span><span class="o">.</span><span class="na">orderValue</span> <span class="o">=</span> <span class="n">meter</span><span class="o">.</span><span class="na">histogramBuilder</span><span class="o">(</span><span class="s">"orders.value"</span><span class="o">)</span>
+            <span class="o">.</span><span class="na">setDescription</span><span class="o">(</span><span class="s">"Order value distribution"</span><span class="o">)</span>
+            <span class="o">.</span><span class="na">setUnit</span><span class="o">(</span><span class="s">"USD"</span><span class="o">)</span>
+            <span class="o">.</span><span class="na">build</span><span class="o">();</span>
+        
+        <span class="c1">// Gauge: Active orders in processing</span>
+        <span class="n">meter</span><span class="o">.</span><span class="na">gaugeBuilder</span><span class="o">(</span><span class="s">"orders.active"</span><span class="o">)</span>
+            <span class="o">.</span><span class="na">setDescription</span><span class="o">(</span><span class="s">"Orders currently being processed"</span><span class="o">)</span>
+            <span class="o">.</span><span class="na">buildWithCallback</span><span class="o">(</span><span class="n">measurement</span> <span class="o">-&gt;</span> 
+                <span class="n">measurement</span><span class="o">.</span><span class="na">record</span><span class="o">(</span><span class="n">activeOrders</span><span class="o">.</span><span class="na">get</span><span class="o">())</span>
+            <span class="o">);</span>
+    <span class="o">}</span>
+    
+    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">recordOrderCreated</span><span class="o">(</span><span class="nc">String</span> <span class="n">orderType</span><span class="o">,</span> <span class="kt">double</span> <span class="n">amount</span><span class="o">)</span> <span class="o">{</span>
+        <span class="n">ordersCreated</span><span class="o">.</span><span class="na">add</span><span class="o">(</span><span class="mi">1</span><span class="o">,</span> <span class="nc">Attributes</span><span class="o">.</span><span class="na">of</span><span class="o">(</span>
+            <span class="nc">AttributeKey</span><span class="o">.</span><span class="na">stringKey</span><span class="o">(</span><span class="s">"order.type"</span><span class="o">),</span> <span class="n">orderType</span>
+        <span class="o">));</span>
+        <span class="n">orderValue</span><span class="o">.</span><span class="na">record</span><span class="o">(</span><span class="n">amount</span><span class="o">);</span>
+    <span class="o">}</span>
+    
+    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">recordOrderFailed</span><span class="o">(</span><span class="nc">String</span> <span class="n">reason</span><span class="o">)</span> <span class="o">{</span>
+        <span class="n">ordersFailed</span><span class="o">.</span><span class="na">add</span><span class="o">(</span><span class="mi">1</span><span class="o">,</span> <span class="nc">Attributes</span><span class="o">.</span><span class="na">of</span><span class="o">(</span>
+            <span class="nc">AttributeKey</span><span class="o">.</span><span class="na">stringKey</span><span class="o">(</span><span class="s">"failure.reason"</span><span class="o">),</span> <span class="n">reason</span>
+        <span class="o">));</span>
+    <span class="o">}</span>
+    
+    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">incrementActiveOrders</span><span class="o">()</span> <span class="o">{</span>
+        <span class="n">activeOrders</span><span class="o">.</span><span class="na">incrementAndGet</span><span class="o">();</span>
+    <span class="o">}</span>
+    
+    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">decrementActiveOrders</span><span class="o">()</span> <span class="o">{</span>
+        <span class="n">activeOrders</span><span class="o">.</span><span class="na">decrementAndGet</span><span class="o">();</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+</code></pre></div></div>
+
+<h3 id="using-the-metrics">Using the Metrics</h3>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nd">@Service</span>
+<span class="nd">@RequiredArgsConstructor</span>
+<span class="kd">public</span> <span class="kd">class</span> <span class="nc">OrderService</span> <span class="o">{</span>
+    
+    <span class="kd">private</span> <span class="kd">final</span> <span class="nc">OrderMetrics</span> <span class="n">metrics</span><span class="o">;</span>
+    
+    <span class="kd">public</span> <span class="nc">Order</span> <span class="nf">createOrder</span><span class="o">(</span><span class="nc">OrderRequest</span> <span class="n">request</span><span class="o">)</span> <span class="o">{</span>
+        <span class="n">metrics</span><span class="o">.</span><span class="na">incrementActiveOrders</span><span class="o">();</span>
+        
+        <span class="k">try</span> <span class="o">{</span>
+            <span class="c1">// Process order</span>
+            <span class="nc">Order</span> <span class="n">order</span> <span class="o">=</span> <span class="n">processOrder</span><span class="o">(</span><span class="n">request</span><span class="o">);</span>
+            
+            <span class="n">metrics</span><span class="o">.</span><span class="na">recordOrderCreated</span><span class="o">(</span>
+                <span class="n">request</span><span class="o">.</span><span class="na">getOrderType</span><span class="o">(),</span>
+                <span class="n">request</span><span class="o">.</span><span class="na">getAmount</span><span class="o">().</span><span class="na">doubleValue</span><span class="o">()</span>
+            <span class="o">);</span>
+            
+            <span class="k">return</span> <span class="n">order</span><span class="o">;</span>
+            
+        <span class="o">}</span> <span class="k">catch</span> <span class="o">(</span><span class="nc">Exception</span> <span class="n">e</span><span class="o">)</span> <span class="o">{</span>
+            <span class="n">metrics</span><span class="o">.</span><span class="na">recordOrderFailed</span><span class="o">(</span><span class="n">e</span><span class="o">.</span><span class="na">getClass</span><span class="o">().</span><span class="na">getSimpleName</span><span class="o">());</span>
+            <span class="k">throw</span> <span class="n">e</span><span class="o">;</span>
+            
+        <span class="o">}</span> <span class="k">finally</span> <span class="o">{</span>
+            <span class="n">metrics</span><span class="o">.</span><span class="na">decrementActiveOrders</span><span class="o">();</span>
+        <span class="o">}</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+</code></pre></div></div>
+
+<h2 id="cardinality-the-silent-performance-killer">Cardinality: The Silent Performance Killer</h2>
+
+<p><strong>Critical</strong>: High-cardinality attributes will explode your metrics storage.</p>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">// BAD - orderId has infinite cardinality</span>
+<span class="n">counter</span><span class="o">.</span><span class="na">add</span><span class="o">(</span><span class="mi">1</span><span class="o">,</span> <span class="nc">Attributes</span><span class="o">.</span><span class="na">of</span><span class="o">(</span>
+    <span class="nc">AttributeKey</span><span class="o">.</span><span class="na">stringKey</span><span class="o">(</span><span class="s">"order.id"</span><span class="o">),</span> <span class="n">orderId</span>  <span class="c1">// Millions of unique values!</span>
+<span class="o">));</span>
+
+<span class="c1">// GOOD - orderType has low cardinality</span>
+<span class="n">counter</span><span class="o">.</span><span class="na">add</span><span class="o">(</span><span class="mi">1</span><span class="o">,</span> <span class="nc">Attributes</span><span class="o">.</span><span class="na">of</span><span class="o">(</span>
+    <span class="nc">AttributeKey</span><span class="o">.</span><span class="na">stringKey</span><span class="o">(</span><span class="s">"order.type"</span><span class="o">),</span> <span class="n">orderType</span>  <span class="c1">// ~5 unique values</span>
+<span class="o">));</span>
+</code></pre></div></div>
+
+<p><strong>Safe attributes</strong>: status codes, regions, order types, customer tiers<br />
+<strong>Dangerous attributes</strong>: user IDs, order IDs, timestamps, emails</p>
+
+<h2 id="building-a-grafana-dashboard">Building a Grafana Dashboard</h2>
+
+<p>Access Grafana at http://localhost:3000 (admin/admin).</p>
+
+<h3 id="add-prometheus-data-source">Add Prometheus Data Source</h3>
+
+<ol>
+  <li>Go to <strong>Configuration → Data Sources</strong></li>
+  <li>Add <strong>Prometheus</strong></li>
+  <li>URL: <code class="language-plaintext highlighter-rouge">http://prometheus:9090</code></li>
+  <li>Click <strong>Save &amp; Test</strong></li>
+</ol>
+
+<h3 id="example-dashboard-panels">Example Dashboard Panels</h3>
+
+<p><strong>Request Rate (Counter)</strong>:</p>
+<pre><code class="language-promql">rate(orders_created_total[5m])
+</code></pre>
+
+<p><strong>Error Rate (%)</strong>:</p>
+<pre><code class="language-promql">rate(orders_failed_total[5m]) / rate(orders_created_total[5m]) * 100
+</code></pre>
+
+<p><strong>P95 Order Value (Histogram)</strong>:</p>
+<pre><code class="language-promql">histogram_quantile(0.95, rate(orders_value_bucket[5m]))
+</code></pre>
+
+<p><strong>Active Orders (Gauge)</strong>:</p>
+<pre><code class="language-promql">orders_active
+</code></pre>
+
+<h2 id="correlating-metrics-with-traces">Correlating Metrics with Traces</h2>
+
+<p>The power comes when you connect them:</p>
+
+<ol>
+  <li><strong>Alert on metric</strong>: Error rate spikes above 5%</li>
+  <li><strong>Filter traces</strong>: Find traces with errors in that timeframe</li>
+  <li><strong>Debug</strong>: Examine specific failing requests</li>
+</ol>
+
+<p>With the OTel Collector (Part 6), you can automatically add <code class="language-plaintext highlighter-rouge">trace_id</code> to metrics for direct correlation.</p>
+
+<h2 id="auto-instrumented-metrics">Auto-Instrumented Metrics</h2>
+
+<p>The Java Agent provides these metrics out-of-the-box:</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>Metric</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">http.server.duration</code></td>
+      <td>HTTP request latency histogram</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">http.server.active_requests</code></td>
+      <td>Current in-flight requests</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">db.client.connections.usage</code></td>
+      <td>Database connection pool</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">jvm.memory.used</code></td>
+      <td>JVM heap usage</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">jvm.gc.duration</code></td>
+      <td>Garbage collection time</td>
+    </tr>
+  </tbody>
+</table>
+
+<h2 id="whats-next">What’s Next</h2>
+
+<p>You have traces enriched with business context and custom metrics for operational visibility.</p>
+
+<p>In <strong>Part 5</strong>, we’ll complete the observability story with <strong>structured logging</strong>:</p>
+<ul>
+  <li>Adding trace/span IDs to logs</li>
+  <li>JSON logging for log aggregation</li>
+  <li>Correlating logs with traces</li>
+</ul>
+
+<hr />
+
+<p><em>Previous: <a href="/2026/01/10/opentelemetry-java-part-3-custom-instrumentation/">Part 3 - Custom Instrumentation</a></em></p>
+
+<p><em>Next: <a href="/2026/01/12/opentelemetry-java-part-5-logs/">Part 5 - Logs in Context</a></em></p>
+
+<hr />
+
+<h2 id="resources">Resources</h2>
+
+<ul>
+  <li><a href="https://opentelemetry.io/docs/languages/java/api/#metrics">OTel Metrics API</a></li>
+  <li><a href="https://prometheus.io/docs/prometheus/latest/querying/basics/">Prometheus Querying</a></li>
+  <li><a href="https://grafana.com/docs/grafana/latest/dashboards/">Grafana Dashboards</a></li>
+</ul>
+
+  </div>
+
+  <footer class="post-footer">
+    <div class="post-nav">
+      
+      <a href="/2026/01/10/opentelemetry-java-part-3-custom-instrumentation/" class="nav-link prev">
+        <span class="nav-label">← Previous</span>
+        <span class="nav-title">OpenTelemetry with Java: Part 3 - Adding Custom Instrumentation</span>
+      </a>
+      
+      
+      <a href="/2026/01/12/opentelemetry-java-part-5-logs/" class="nav-link next">
+        <span class="nav-label">Next →</span>
+        <span class="nav-title">OpenTelemetry with Java: Part 5 - Logs in Context</span>
+      </a>
+      
+    </div>
+  </footer>
+</article>
+        </div>
+    </main>
+
+    <footer class="site-footer">
+        <div class="footer-wrapper">
+            <p>&copy; 2026 {"name" => "Laxman Sharma"}. All rights reserved.</p>
+            <div class="social-links">
+                <a href="https://github.com/laxman-sharma" target="_blank" rel="noopener noreferrer">GitHub</a>
+                <a href="https://www.linkedin.com/in/laxman-sharma-328b2659" target="_blank"
+                    rel="noopener noreferrer">LinkedIn</a>
+                <a href="https://www.toptal.com/resume/laxman-sharma" target="_blank"
+                    rel="noopener noreferrer">Toptal</a>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Reading progress bar
+        window.addEventListener('scroll', () => {
+            const winScroll = document.body.scrollTop || document.documentElement.scrollTop;
+            const height = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+            const scrolled = (winScroll / height) * 100;
+            document.getElementById('progress-bar').style.width = scrolled + '%';
+        });
+    </script>
+</body>
+
+</html>

@@ -8,9 +8,9 @@ layout: default
       <img src="{{ page.image | relative_url }}" alt="{{ page.title }}" class="hero-image">
     </div>
     {% endif %}
-    
+
     <h1 class="post-title p-name" itemprop="name headline">{{ page.title | escape }}</h1>
-    
+
     <div class="post-meta">
       <div class="author-info">
         <div class="author-avatar">
@@ -23,11 +23,11 @@ layout: default
           </time>
         </div>
       </div>
-      
+
       {% if page.tags.size > 0 %}
       <div class="post-tags">
         {% for tag in page.tags %}
-        <span class="tag">{{ tag }}</span>
+        <a href="{{ '/tags/' | relative_url }}#{{ tag | slugify }}" class="tag">{{ tag }}</a>
         {% endfor %}
       </div>
       {% endif %}
