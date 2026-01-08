@@ -10,8 +10,8 @@ baseurl: "" # Subpath if using project pages
 markdown: kramdown
 highlighter: rouge
 
-# Theme
-theme: minima
+# Theme (disabled - using custom layouts)
+# theme: minima
 
 # Plugins
 plugins:
