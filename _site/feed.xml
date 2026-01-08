@@ -1,0 +1,290 @@
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="4.4.1">Jekyll</generator><link href="http://localhost:4000/feed.xml" rel="self" type="application/atom+xml" /><link href="http://localhost:4000/" rel="alternate" type="text/html" /><updated>2026-01-08T23:31:43+08:00</updated><id>http://localhost:4000/feed.xml</id><title type="html">My Blog</title><subtitle>A collection of my articles and thoughts</subtitle><entry><title type="html">OpenTelemetry with Java: Part 1 - Understanding the Fundamentals</title><link href="http://localhost:4000/2026/01/08/opentelemetry-java-part-1-fundamentals/" rel="alternate" type="text/html" title="OpenTelemetry with Java: Part 1 - Understanding the Fundamentals" /><published>2026-01-08T00:00:00+08:00</published><updated>2026-01-08T00:00:00+08:00</updated><id>http://localhost:4000/2026/01/08/opentelemetry-java-part-1-fundamentals</id><content type="html" xml:base="http://localhost:4000/2026/01/08/opentelemetry-java-part-1-fundamentals/"><![CDATA[<h1 id="opentelemetry-with-java-understanding-the-fundamentals">OpenTelemetry with Java: Understanding the Fundamentals</h1>
+
+<p><em>Part 1 of a 6-part series on implementing observability in Java microservices</em></p>
+
+<hr />
+
+<p>If you’ve ever stared at logs from 10 different microservices trying to figure out why a user’s request failed, you know the pain. The request worked in dev, passed staging, but something went wrong in production—and you have no idea which service is to blame.</p>
+
+<p>This is the problem observability solves. And OpenTelemetry (OTel) is now the industry standard for implementing it.</p>
+
+<p>In this series, we’ll build production-ready observability into a Java microservices system. But before we write any code, let’s build the mental model.</p>
+
+<h2 id="what-is-observability">What is Observability?</h2>
+
+<p>Observability is your ability to understand what’s happening inside your system by examining its outputs. Unlike traditional monitoring (which tells you <em>that</em> something is wrong), observability helps you understand <em>why</em>.</p>
+
+<p>The three pillars of observability are:</p>
+
+<h3 id="1-traces">1. Traces</h3>
+<p>A <strong>trace</strong> represents the journey of a single request through your distributed system. It’s like a timeline showing every service the request touched, how long each step took, and what happened at each point.</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>User Request → API Gateway → Order Service → Inventory Service → Payment Service
+     |            5ms            12ms             8ms              45ms
+</code></pre></div></div>
+
+<p>Each step in this journey is called a <strong>span</strong>. Spans have:</p>
+<ul>
+  <li>A name (e.g., <code class="language-plaintext highlighter-rouge">POST /orders</code>)</li>
+  <li>A duration (start time → end time)</li>
+  <li>Attributes (metadata like <code class="language-plaintext highlighter-rouge">order.id</code>, <code class="language-plaintext highlighter-rouge">customer.id</code>)</li>
+  <li>A parent-child relationship (creating the tree structure)</li>
+</ul>
+
+<h3 id="2-metrics">2. Metrics</h3>
+<p><strong>Metrics</strong> are numerical measurements collected over time:</p>
+<ul>
+  <li>Request counts</li>
+  <li>Error rates</li>
+  <li>Response time percentiles (p50, p95, p99)</li>
+  <li>Active connections</li>
+  <li>Queue depths</li>
+</ul>
+
+<p>Metrics answer questions like: “How many requests per second are we handling?” or “What percentage of requests are failing?”</p>
+
+<h3 id="3-logs">3. Logs</h3>
+<p><strong>Logs</strong> are timestamped records of discrete events:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>2026-01-08T10:15:30Z [INFO] Order created: orderId=12345, customerId=abc
+2026-01-08T10:15:31Z [ERROR] Payment failed: orderId=12345, reason=insufficient_funds
+</code></pre></div></div>
+
+<p>The power comes when you <strong>correlate</strong> all three: find the error in logs, jump to the trace to see the full request flow, then check metrics to see if this is an isolated incident or a pattern.</p>
+
+<h2 id="why-opentelemetry">Why OpenTelemetry?</h2>
+
+<p>Before OpenTelemetry, the observability landscape was fragmented:</p>
+<ul>
+  <li><strong>OpenTracing</strong> for distributed tracing</li>
+  <li><strong>OpenCensus</strong> for metrics and tracing</li>
+  <li>Vendor-specific SDKs (Datadog, New Relic, Jaeger, etc.)</li>
+</ul>
+
+<p>OpenTelemetry emerged as the <strong>merger of OpenTracing and OpenCensus</strong>, and is now a CNCF project (same foundation as Kubernetes). It provides:</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>Benefit</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Vendor-neutral</strong></td>
+      <td>Instrument once, export to any backend</td>
+    </tr>
+    <tr>
+      <td><strong>Standardized</strong></td>
+      <td>Consistent APIs across languages</td>
+    </tr>
+    <tr>
+      <td><strong>Full coverage</strong></td>
+      <td>Traces, metrics, AND logs</td>
+    </tr>
+    <tr>
+      <td><strong>Auto-instrumentation</strong></td>
+      <td>Works with zero code changes</td>
+    </tr>
+  </tbody>
+</table>
+
+<h2 id="opentelemetry-architecture">OpenTelemetry Architecture</h2>
+
+<p>Understanding OTel’s components is crucial before implementation:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>┌─────────────────────────────────────────────────────────────────┐
+│                        YOUR APPLICATION                          │
+│  ┌──────────────────────────────────────────────────────────┐   │
+│  │                   OTel Java Agent                         │   │
+│  │  (Auto-instruments HTTP, JDBC, Kafka, gRPC, etc.)        │   │
+│  └──────────────────────────────────────────────────────────┘   │
+│                              +                                   │
+│  ┌──────────────────────────────────────────────────────────┐   │
+│  │                   OTel SDK                                │   │
+│  │  (Manual instrumentation: custom spans, metrics, attrs)   │   │
+│  └──────────────────────────────────────────────────────────┘   │
+└─────────────────────────────────────────────────────────────────┘
+                               │
+                               │ OTLP (OpenTelemetry Protocol)
+                               ▼
+                  ┌─────────────────────────┐
+                  │    OTel Collector       │
+                  │  (Process, transform,   │
+                  │   route telemetry)      │
+                  └─────────────────────────┘
+                               │
+              ┌────────────────┼────────────────┐
+              ▼                ▼                ▼
+        ┌──────────┐    ┌──────────┐    ┌──────────┐
+        │  Jaeger  │    │Prometheus│    │  Vendor  │
+        │ (Traces) │    │(Metrics) │    │  (Any)   │
+        └──────────┘    └──────────┘    └──────────┘
+</code></pre></div></div>
+
+<h3 id="the-components">The Components</h3>
+
+<p><strong>API</strong>: Interfaces for instrumentation. Lightweight, safe to use everywhere.</p>
+
+<p><strong>SDK</strong>: Implementation of the API. Configures how telemetry is processed and exported.</p>
+
+<p><strong>Java Agent</strong>: Attaches to your JVM and automatically instruments common libraries—HTTP clients, database drivers, messaging systems—with zero code changes.</p>
+
+<p><strong>Collector</strong>: A standalone service that receives, processes, and exports telemetry. Acts as a central hub for your observability pipeline.</p>
+
+<p><strong>Exporters</strong>: Send telemetry to backends (Jaeger, Prometheus, Datadog, etc.)</p>
+
+<h2 id="key-concepts-deep-dive">Key Concepts Deep Dive</h2>
+
+<h3 id="context-propagation">Context Propagation</h3>
+
+<p>When Service A calls Service B, how does Service B know it’s part of the same trace?</p>
+
+<p><strong>Context propagation</strong> is the mechanism that passes trace context (trace ID, span ID) between services. OpenTelemetry uses HTTP headers (specifically W3C Trace Context):</p>
+
+<div class="language-http highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nf">GET</span> <span class="nn">/inventory/check</span> <span class="k">HTTP</span><span class="o">/</span><span class="m">1.1</span>
+<span class="na">Host</span><span class="p">:</span> <span class="s">inventory-service</span>
+<span class="na">traceparent</span><span class="p">:</span> <span class="s">00-0af7651916cd43dd8448eb211c80319c-b7ad6b7169203331-01</span>
+</code></pre></div></div>
+
+<p>The <code class="language-plaintext highlighter-rouge">traceparent</code> header carries the trace ID and parent span ID, allowing the receiving service to continue the same trace.</p>
+
+<h3 id="semantic-conventions">Semantic Conventions</h3>
+
+<p>OpenTelemetry defines <strong>semantic conventions</strong>—standardized names for common attributes:</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>Convention</th>
+      <th>Example</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">http.request.method</code></td>
+      <td><code class="language-plaintext highlighter-rouge">GET</code>, <code class="language-plaintext highlighter-rouge">POST</code></td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">http.response.status_code</code></td>
+      <td><code class="language-plaintext highlighter-rouge">200</code>, <code class="language-plaintext highlighter-rouge">500</code></td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">db.system</code></td>
+      <td><code class="language-plaintext highlighter-rouge">postgresql</code>, <code class="language-plaintext highlighter-rouge">mysql</code></td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">service.name</code></td>
+      <td><code class="language-plaintext highlighter-rouge">order-service</code></td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">deployment.environment</code></td>
+      <td><code class="language-plaintext highlighter-rouge">production</code></td>
+    </tr>
+  </tbody>
+</table>
+
+<p>Using these conventions means your telemetry works consistently with dashboards and tools across the ecosystem.</p>
+
+<h3 id="resources">Resources</h3>
+
+<p>A <strong>resource</strong> identifies the entity producing telemetry:</p>
+
+<div class="language-yaml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="na">service.name</span><span class="pi">:</span> <span class="s">order-service</span>
+<span class="na">service.version</span><span class="pi">:</span> <span class="s">1.2.3</span>
+<span class="na">deployment.environment</span><span class="pi">:</span> <span class="s">production</span>
+<span class="na">host.name</span><span class="pi">:</span> <span class="s">pod-xyz-123</span>
+</code></pre></div></div>
+
+<p>Resources are attached to all telemetry, enabling filtering like “show me all traces from order-service in production.”</p>
+
+<h2 id="auto-vs-manual-instrumentation">Auto vs Manual Instrumentation</h2>
+
+<p>OpenTelemetry offers two instrumentation approaches:</p>
+
+<h3 id="auto-instrumentation-zero-code">Auto-Instrumentation (Zero-Code)</h3>
+
+<p>Attach the Java agent to your JVM:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>java <span class="nt">-javaagent</span>:opentelemetry-javaagent.jar <span class="nt">-jar</span> myapp.jar
+</code></pre></div></div>
+
+<p><strong>What you get automatically:</strong></p>
+<ul>
+  <li>HTTP server/client spans (Spring MVC, Servlet, RestTemplate, WebClient)</li>
+  <li>Database spans (JDBC, Hibernate)</li>
+  <li>Messaging spans (Kafka, RabbitMQ)</li>
+  <li>gRPC spans</li>
+  <li>And 100+ other libraries</li>
+</ul>
+
+<p><strong>Pros</strong>: Fast rollout, no code changes, consistent across services<br />
+<strong>Cons</strong>: Less control over span names and attributes</p>
+
+<h3 id="manual-instrumentation">Manual Instrumentation</h3>
+
+<p>Add custom spans and attributes for business context:</p>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nd">@WithSpan</span><span class="o">(</span><span class="s">"process-payment"</span><span class="o">)</span>
+<span class="kd">public</span> <span class="nc">PaymentResult</span> <span class="nf">processPayment</span><span class="o">(</span>
+    <span class="nd">@SpanAttribute</span><span class="o">(</span><span class="s">"order.id"</span><span class="o">)</span> <span class="nc">String</span> <span class="n">orderId</span><span class="o">)</span> <span class="o">{</span>
+    <span class="c1">// Your business logic</span>
+<span class="o">}</span>
+</code></pre></div></div>
+
+<p><strong>Pros</strong>: Full control, business-relevant context<br />
+<strong>Cons</strong>: Requires code changes, more maintenance</p>
+
+<p><strong>Best practice</strong>: Start with auto-instrumentation, then add manual instrumentation where you need business context.</p>
+
+<h2 id="whats-next">What’s Next</h2>
+
+<p>Now you have the mental model. In <strong>Part 2</strong>, we’ll get hands-on:</p>
+
+<ul>
+  <li>Set up a 3-service demo project</li>
+  <li>Configure the OpenTelemetry Java Agent</li>
+  <li>Run Jaeger locally with Docker</li>
+  <li>See your first distributed trace</li>
+</ul>
+
+<p>No more theory—just code.</p>
+
+<hr />
+
+<p><em>Next: <a href="/2026/01/09/opentelemetry-java-part-2-zero-to-tracing/">Part 2 - Zero to Tracing in 15 Minutes</a></em></p>
+
+<hr />
+
+<h2 id="resources-1">Resources</h2>
+
+<ul>
+  <li><a href="https://opentelemetry.io/docs/">OpenTelemetry Documentation</a></li>
+  <li><a href="https://opentelemetry.io/docs/languages/java/">OpenTelemetry Java</a></li>
+  <li><a href="https://opentelemetry.io/docs/concepts/semantic-conventions/">Semantic Conventions</a></li>
+  <li><a href="https://www.cncf.io/projects/opentelemetry/">CNCF OpenTelemetry Project</a></li>
+</ul>]]></content><author><name>Author Name</name></author><category term="observability" /><category term="java" /><category term="opentelemetry" /><category term="distributed-tracing" /><category term="microservices" /><category term="java" /><category term="spring-boot" /><summary type="html"><![CDATA[A comprehensive introduction to OpenTelemetry concepts for Java developers. Learn about traces, metrics, logs, and how they work together in distributed microservices.]]></summary></entry><entry><title type="html">Welcome to My Blog</title><link href="http://localhost:4000/2026/01/08/welcome/" rel="alternate" type="text/html" title="Welcome to My Blog" /><published>2026-01-08T00:00:00+08:00</published><updated>2026-01-08T00:00:00+08:00</updated><id>http://localhost:4000/2026/01/08/welcome</id><content type="html" xml:base="http://localhost:4000/2026/01/08/welcome/"><![CDATA[<h1 id="welcome">Welcome!</h1>
+
+<p>This is my first blog post. I’ll be sharing my thoughts, tutorials, and insights here.</p>
+
+<h2 id="what-to-expect">What to Expect</h2>
+
+<ul>
+  <li><strong>Technical tutorials</strong> - Deep dives into programming topics</li>
+  <li><strong>Project updates</strong> - Progress on what I’m building</li>
+  <li><strong>Thoughts &amp; opinions</strong> - My take on tech and beyond</li>
+</ul>
+
+<h2 id="why-markdown">Why Markdown?</h2>
+
+<p>Writing in Markdown gives me:</p>
+<ol>
+  <li><strong>Version control</strong> - All my posts are tracked in Git</li>
+  <li><strong>Portability</strong> - Easy to move content anywhere</li>
+  <li><strong>Focus</strong> - Clean writing without formatting distractions</li>
+</ol>
+
+<hr />
+
+<p><em>Stay tuned for more content!</em></p>]]></content><author><name>Author Name</name></author><category term="general" /><category term="welcome" /><category term="first-post" /><summary type="html"><![CDATA[This is my first blog post. Welcome to my corner of the internet!]]></summary></entry></feed>
