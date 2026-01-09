@@ -33,6 +33,12 @@ minima:
 # Author defaults
 author:
   name: Laxman Sharma
+  twitter: "@laxman_sharma"
+  linkedin: "laxman-sharma-328b2659"
+
+twitter:
+  username: laxman_sharma
+  card: summary_large_image
 
 # Collections for posts
 defaults:
