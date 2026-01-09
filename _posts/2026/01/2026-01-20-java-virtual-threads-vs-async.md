@@ -19,7 +19,7 @@ On the other hand, **Reactive Programming** (WebFlux, Project Reactor) and `Comp
 
 ---
 
-![Java Virtual Threads: Unleashing Concurrency]({{ site.url }}{{ site.baseurl }}/assets/images/virtual-threads-hero.png)
+![Java Virtual Threads: Unleashing Concurrency]({{ "" | relative_url }}/assets/images/virtual-threads-hero.png)
 
 ---
 
@@ -53,7 +53,7 @@ Once enabled, Tomcat (or Jetty) will use a Virtual Thread for every incoming HTT
 
 We ran a benchmark simulating a service that calls a slow external API with a 500ms latency. We measured how many requests per second (RPS) the application could handle as concurrency increased.
 
-![Performance Comparison]({{ site.url }}{{ site.baseurl }}/assets/images/threads-benchmark.png)
+![Performance Comparison]({{ "" | relative_url }}/assets/images/threads-benchmark.png)
 
 ### Key Findings:
 *   **Platform Threads**: Flatlined at around **200 concurrent users** (the default Tomcat pool size). Latency spiked as requests queued up.
@@ -90,4 +90,4 @@ It marks the end of the "Asynchronous Era" for most enterprise applications. You
 
 ---
 
-*Found this deep-dive helpful? Check out our previous post on [High-Throughput File Uploads]({{ site.url }}{{ site.baseurl }}/2026/01/15/spring-boot-file-upload-streaming/) or our [OpenTelemetry series]({{ site.url }}{{ site.baseurl }}/2026/01/08/opentelemetry-java-part-1-fundamentals/).*
+*Found this deep-dive helpful? Check out our previous post on [High-Throughput File Uploads]({{ "" | relative_url }}/2026/01/15/spring-boot-file-upload-streaming/) or our [OpenTelemetry series]({{ "" | relative_url }}/2026/01/08/opentelemetry-java-part-1-fundamentals/).*

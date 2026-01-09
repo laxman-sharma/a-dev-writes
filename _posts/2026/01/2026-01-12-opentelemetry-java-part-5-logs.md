@@ -320,9 +320,9 @@ In **Part 6**, we'll productionize everything with the **OpenTelemetry Collector
 
 ---
 
-*Previous: [Part 4 - Metrics That Matter]({{ site.url }}{{ site.baseurl }}/2026/01/11/opentelemetry-java-part-4-metrics/)*
+*Previous: [Part 4 - Metrics That Matter]({{ "" | relative_url }}/2026/01/11/opentelemetry-java-part-4-metrics/)*
 
-*Next: [Part 6 - Production Patterns]({{ site.url }}{{ site.baseurl }}/2026/01/13/opentelemetry-java-part-6-production/)*
+*Next: [Part 6 - Production Patterns]({{ "" | relative_url }}/2026/01/13/opentelemetry-java-part-6-production/)*
 
 ---
 

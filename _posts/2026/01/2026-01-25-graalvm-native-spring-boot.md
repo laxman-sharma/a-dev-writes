@@ -19,7 +19,7 @@ Enter **GraalVM Native Image** and **Spring AOT**.
 
 ---
 
-![Standard JVM vs GraalVM Native Image]({{ site.url }}{{ site.baseurl }}/assets/images/graalvm-native-hero.png)
+![Standard JVM vs GraalVM Native Image]({{ "" | relative_url }}/assets/images/graalvm-native-hero.png)
 
 ---
 
@@ -43,7 +43,7 @@ Spring Boot 3 introduces the **Spring AOT engine**, which handles the heavy lift
 
 We compared a standard Spring Boot 3.4 REST API (packaged as a JAR) against a Native Executable built from the same code.
 
-![Native Memory and Startup Comparison]({{ site.url }}{{ site.baseurl }}/assets/images/native-memory-chart.png)
+![Native Memory and Startup Comparison]({{ "" | relative_url }}/assets/images/native-memory-chart.png)
 
 ### Benchmark Results:
 
@@ -77,4 +77,4 @@ If you’re running Spring Boot in a containerized environment, it's time to sta
 
 ---
 
-*Ready to scale? Check out our previous post on [Virtual Threads]({{ site.url }}{{ site.baseurl }}/2026/01/20/java-virtual-threads-vs-async/) or learn about [Streaming File Uploads]({{ site.url }}{{ site.baseurl }}/2026/01/15/spring-boot-file-upload-streaming/).*
+*Ready to scale? Check out our previous post on [Virtual Threads]({{ "" | relative_url }}/2026/01/20/java-virtual-threads-vs-async/) or learn about [Streaming File Uploads]({{ "" | relative_url }}/2026/01/15/spring-boot-file-upload-streaming/).*

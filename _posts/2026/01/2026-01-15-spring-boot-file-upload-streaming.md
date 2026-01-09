@@ -102,7 +102,7 @@ private void streamToDb(InputStream is) {
 
 I ran a benchmark uploading a **CSV with 100,000 records** to this application.
 
-![Memory Usage Comparison]({{ site.url }}{{ site.baseurl }}/assets/images/memory-benchmark.png)
+![Memory Usage Comparison]({{ "" | relative_url }}/assets/images/memory-benchmark.png)
 
 | Method | Heap Usage (Peak) | Result | GC Activity |
 |--------|-------------------|--------|-------------|

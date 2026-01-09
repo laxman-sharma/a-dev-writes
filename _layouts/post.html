@@ -7,7 +7,7 @@ layout: default
 
     {% if page.image %}
     <div class="hero-image-container">
-      <img src="{{ page.image | absolute_url }}" alt="{{ page.title }}" class="hero-image">
+      <img src="{{ page.image | relative_url }}" alt="{{ page.title }}" class="hero-image">
     </div>
     {% endif %}
 
