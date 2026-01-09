@@ -5,7 +5,7 @@ description: Technical articles on software engineering, observability, and dist
 email: ""
 url: "https://laxman-sharma.github.io"
 baseurl: "/a-dev-writes" # Subpath of your repository
-google_adsense: "" # Add your Publisher ID here (e.g., pub-1234567890123456)
+google_adsense: "6313635871108418" # Your Publisher ID
 
 
 # Build settings
