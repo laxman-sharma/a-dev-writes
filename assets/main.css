@@ -909,7 +909,7 @@ body {
 
 /* Hero image special styling */
 .hero-image-container {
-  margin: -3rem -2rem 2.5rem;
+  margin: 1.5rem -2rem 2.5rem;
   border-radius: var(--radius-lg);
   overflow: hidden;
   box-shadow: 0 30px 60px -15px rgba(0, 0, 0, 0.7);
@@ -1038,7 +1038,7 @@ body {
   }
 
   .hero-image-container {
-    margin: -2rem -1rem 1.5rem;
+    margin: 1rem -1rem 1.5rem;
     border-radius: 0;
   }
 
