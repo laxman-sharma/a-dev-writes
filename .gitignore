@@ -20,5 +20,8 @@ Thumbs.db
 *.swp
 *.swo
 
-# Drafts (optional - uncomment if you want to keep drafts local)
-# drafts/
+# Jekyll
+_site/
+.sass-cache/
+.jekyll-cache/
+.jekyll-metadata
