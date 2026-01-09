@@ -3,8 +3,9 @@ title: A Dev Writes
 description: Technical articles on software engineering, observability, and distributed systems
 # author: Laxman Sharma (Defined below as object)
 email: ""
-url: "https://laxman-sharma.github.io"
-baseurl: "/a-dev-writes" # Subpath of your repository
+url: "https://adevwrites.space"
+baseurl: "" # No subpath for custom domain
+
 google_adsense: "6313635871108418" # Your Publisher ID
 
 
