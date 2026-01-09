@@ -1,7 +1,7 @@
 # Jekyll configuration for A Dev Writes blog
 title: A Dev Writes
 description: Technical articles on software engineering, observability, and distributed systems
-author: Laxman Sharma
+# author: Laxman Sharma (Defined below as object)
 email: ""
 url: "https://laxman-sharma.github.io"
 baseurl: "/a-dev-writes" # Subpath of your repository
@@ -38,7 +38,7 @@ defaults:
       type: "posts"
     values:
       layout: "post"
-      author: "Laxman Sharma"
+      author: Laxman Sharma
 
 # Exclude from processing
 exclude:
