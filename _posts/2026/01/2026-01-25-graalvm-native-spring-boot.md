@@ -46,6 +46,7 @@ We compared a standard Spring Boot 3.4 REST API (packaged as a JAR) against a Na
 ![Native Memory and Startup Comparison]({{ site.url }}{{ site.baseurl }}/assets/images/native-memory-chart.png)
 
 ### Benchmark Results:
+
 | Metric | Standard JVM (JIT) | GraalVM Native | Improvement |
 | :--- | :--- | :--- | :--- |
 | **Startup Time** | 2,500 ms | **50 ms** | **98% Faster** |
