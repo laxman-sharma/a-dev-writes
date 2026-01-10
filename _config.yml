@@ -39,10 +39,21 @@ twitter:
   card: summary_large_image
 
 # Collections for posts
+collections:
+  dsa:
+    output: true
+    permalink: /dsa/:name/
+
 defaults:
   - scope:
       path: ""
       type: "posts"
+    values:
+      layout: "post"
+      author: Laxman Sharma
+  - scope:
+      path: ""
+      type: "dsa"
     values:
       layout: "post"
       author: Laxman Sharma
@@ -58,6 +69,7 @@ exclude:
   - vendor
   - _site
   - examples
+  - Data Structure & Algorithms
 
 # Permalink structure
 permalink: /:year/:month/:day/:title/
