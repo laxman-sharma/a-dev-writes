@@ -17,3 +17,4 @@ platforms :mingw, :x64_mingw, :mswin, :jruby do
 end
 
 gem "logger", "~> 1.7"
+gem "faraday-retry"

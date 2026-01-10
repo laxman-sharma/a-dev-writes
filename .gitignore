@@ -25,3 +25,6 @@ _site/
 .sass-cache/
 .jekyll-cache/
 .jekyll-metadata
+
+# Separate repositories
+otel-demo/

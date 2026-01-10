@@ -1,17 +1,20 @@
 ---
-layout: post
-title: "OpenTelemetry with Java: Part 5 - Logs in Context"
+layout: dsa_post
+course: opentelemetry
+title: "Part 6: Logs"
 date: 2026-01-12
 author: Laxman Sharma
 image: /assets/images/otel-part5-hero.png
+category: "Module 2: Implementation"
+order: 6
 categories: [observability, java]
 tags: [opentelemetry, java, observability, logging, logs]
-excerpt: "Unify your logs with traces. Learn to add trace IDs to log output, configure structured JSON logging, and correlate logs with distributed traces."
+excerpt: "Correlating Logs with Traces effectively."
 ---
 
 # Logs in Context
 
-*Part 5 of a 6-part series on implementing observability in Java microservices*
+*Part 6 of an 8-part series on implementing observability in Java microservices*
 
 ---
 
@@ -317,12 +320,6 @@ In **Part 6**, we'll productionize everything with the **OpenTelemetry Collector
 - Centralized telemetry pipeline
 - Sampling strategies
 - Multi-backend export
-
----
-
-*Previous: [Part 4 - Metrics That Matter]({{ "" | relative_url }}/2026/01/11/opentelemetry-java-part-4-metrics/)*
-
-*Next: [Part 6 - Production Patterns]({{ "" | relative_url }}/2026/01/13/opentelemetry-java-part-6-production/)*
 
 ---
 

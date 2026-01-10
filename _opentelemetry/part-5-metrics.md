@@ -1,17 +1,20 @@
 ---
-layout: post
-title: "OpenTelemetry with Java: Part 4 - Metrics That Matter"
+layout: dsa_post
+course: opentelemetry
+title: "Part 5: Metrics"
+category: "Module 2: Implementation"
+order: 5
 date: 2026-01-11
 author: Laxman Sharma
 image: /assets/images/otel-part4-hero.png
 categories: [observability, java]
 tags: [opentelemetry, java, observability, metrics, prometheus, grafana]
-excerpt: "Learn to add custom application metrics alongside traces. We'll cover counters, gauges, histograms and build a Grafana dashboard."
+excerpt: "Counters, Gauges, and Histograms in practice."
 ---
 
 # Metrics That Matter
 
-*Part 4 of a 6-part series on implementing observability in Java microservices*
+*Part 5 of an 8-part series on implementing observability in Java microservices*
 
 ---
 
@@ -128,6 +131,9 @@ scrape_configs:
     static_configs:
       - targets: ['host.docker.internal:8082']
 ```
+
+![Prometheus Targets]({{ "/assets/images/otel-prometheus-targets.png" | relative_url }})
+*Above: Prometheus UI showing all three microservices being successfully scraped.*
 
 ### Enable Metrics Export
 
@@ -323,12 +329,6 @@ In **Part 5**, we'll complete the observability story with **structured logging*
 - Adding trace/span IDs to logs
 - JSON logging for log aggregation
 - Correlating logs with traces
-
----
-
-*Previous: [Part 3 - Custom Instrumentation]({{ "" | relative_url }}/2026/01/10/opentelemetry-java-part-3-custom-instrumentation/)*
-
-*Next: [Part 5 - Logs in Context]({{ "" | relative_url }}/2026/01/12/opentelemetry-java-part-5-logs/)*
 
 ---
 

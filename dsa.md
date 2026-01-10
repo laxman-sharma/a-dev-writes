@@ -1,7 +1,8 @@
 ---
-layout: page
+layout: dsa_post
 title: Data Structure & Algorithms
 permalink: /dsa/
+course: dsa
 ---
 
 Welcome to the **A Dev Writes** DSA series. This collection is designed to take you from the basics to advanced algorithmic problem solving.

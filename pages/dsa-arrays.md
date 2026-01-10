@@ -1,7 +1,8 @@
 ---
-layout: page
+layout: dsa_post
 title: "Module 1: Arrays"
 permalink: /dsa/array/
+category: Array
 ---
 
 # Array Basics

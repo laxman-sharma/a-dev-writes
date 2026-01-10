@@ -1414,3 +1414,973 @@ body {
     font-size: 2rem;
   }
 }
+
+/* ========================================
+   DSA Layout (LeetCode Style)
+   ======================================== */
+
+.dsa-layout-container {
+  display: flex;
+  gap: 2rem;
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 2rem;
+  align-items: flex-start;
+}
+
+/* Sidebar */
+.dsa-sidebar {
+  width: 280px;
+  flex-shrink: 0;
+  position: sticky;
+  top: 100px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  max-height: calc(100vh - 120px);
+  overflow-y: auto;
+}
+
+.dsa-sidebar-header {
+  padding: 1rem;
+  border-bottom: 1px solid var(--border-color);
+  font-weight: 600;
+}
+
+.dsa-sidebar-header a {
+  color: var(--text-primary);
+  text-decoration: none;
+}
+
+.dsa-module {
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.dsa-module-title {
+  padding: 0.75rem 1rem;
+  margin: 0;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  background: rgba(0, 0, 0, 0.2);
+}
+
+.dsa-problem-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.dsa-problem-list li {
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.dsa-problem-list li a {
+  display: flex;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  text-decoration: none;
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  transition: all 0.2s;
+}
+
+.dsa-problem-list li.active a {
+  background: rgba(59, 130, 246, 0.1);
+  color: var(--accent-primary);
+  border-left: 3px solid var(--accent-primary);
+}
+
+.dsa-problem-list li a:hover {
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--text-primary);
+}
+
+.problem-order {
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+}
+
+/* Main Content */
+.dsa-main-content {
+  flex-grow: 1;
+  min-width: 0;
+  /* Prevents overflow */
+  background: var(--bg-primary);
+  /* Or card if preferred */
+}
+
+/* Breadcrumbs */
+.dsa-breadcrumbs ol {
+  display: flex;
+  list-style: none;
+  padding: 0;
+  margin: 0 0 1.5rem;
+  gap: 0.5rem;
+  font-size: 0.9rem;
+  color: var(--text-muted);
+}
+
+.dsa-breadcrumbs li::after {
+  content: "/";
+  margin-left: 0.5rem;
+  color: var(--text-muted);
+  opacity: 0.5;
+}
+
+.dsa-breadcrumbs li:last-child::after {
+  content: "";
+}
+
+.dsa-breadcrumbs a {
+  color: var(--text-secondary);
+  text-decoration: none;
+}
+
+.dsa-breadcrumbs a:hover {
+  color: var(--accent-primary);
+}
+
+.dsa-breadcrumbs li[aria-current="page"] {
+  color: var(--text-primary);
+  font-weight: 500;
+}
+
+/* DSA Header */
+.dsa-header {
+  margin-bottom: 2rem;
+  border-bottom: 1px solid var(--border-subtle);
+  padding-bottom: 1.5rem;
+}
+
+.dsa-title {
+  margin: 0 0 1rem;
+  font-size: 2.25rem;
+}
+
+.dsa-meta {
+  display: flex;
+  gap: 1rem;
+}
+
+.dsa-chip {
+  padding: 0.25rem 0.75rem;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.dsa-chip.category {
+  background: var(--bg-elevated);
+  color: var(--text-secondary);
+  border: 1px solid var(--border-color);
+}
+
+.difficulty-easy {
+  background: rgba(34, 197, 94, 0.2);
+  color: #4ade80;
+}
+
+.difficulty-medium {
+  background: rgba(234, 179, 8, 0.2);
+  color: #facc15;
+}
+
+.difficulty-hard {
+  background: rgba(239, 68, 68, 0.2);
+  color: #f87171;
+}
+
+.dsa-body {
+  font-size: 1.05rem;
+}
+
+/* Footer Nav */
+.dsa-footer-nav {
+  margin-top: 4rem;
+  padding-top: 2rem;
+  border-top: 1px solid var(--border-subtle);
+}
+
+.nav-buttons {
+  display: flex;
+  justify-content: space-between;
+}
+
+.dsa-nav-btn {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.75rem 1.5rem;
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  color: var(--text-primary);
+  text-decoration: none;
+  font-weight: 500;
+  transition: all 0.2s;
+}
+
+.dsa-nav-btn:hover {
+  border-color: var(--accent-primary);
+  transform: translateY(-2px);
+}
+
+/* Mobile Responsive */
+@media (max-width: 1024px) {
+  .dsa-layout-container {
+    flex-direction: column;
+    padding: 1rem;
+  }
+
+  .dsa-sidebar {
+    width: 100%;
+    position: relative;
+    top: 0;
+    max-height: 300px;
+  }
+}
+
+/* ========================================
+   DSA Layout Refinements (Iter. 2)
+   ======================================== */
+
+/* Optimize Width */
+.dsa-layout-container {
+  max-width: 95vw;
+  /* Use more screen width */
+  padding: 1.5rem;
+  gap: 1.5rem;
+}
+
+/* Sidebar Collapsible */
+.dsa-module {
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.dsa-module summary {
+  padding: 0.75rem 1rem;
+  cursor: pointer;
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  background: rgba(255, 255, 255, 0.03);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  transition: background 0.2s;
+  list-style: none;
+  /* Hide default triangle in some browsers */
+}
+
+.dsa-module summary::-webkit-details-marker {
+  display: none;
+}
+
+.dsa-module summary:hover {
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--text-primary);
+}
+
+.dsa-module summary::after {
+  content: '+';
+  font-size: 1.1em;
+  font-weight: 400;
+}
+
+.dsa-module[open] summary::after {
+  content: '−';
+}
+
+.dsa-module-count {
+  font-size: 0.75rem;
+  opacity: 0.6;
+  background: var(--bg-primary);
+  padding: 0.1rem 0.4rem;
+  border-radius: 10px;
+}
+
+/* Improved Problem List Items */
+.dsa-problem-list li a {
+  padding: 0.6rem 1rem 0.6rem 2.5rem;
+  /* Indent slightly */
+  font-size: 0.9rem;
+  position: relative;
+  display: block;
+  /* ensure block for hit area */
+}
+
+.problem-status {
+  position: absolute;
+  left: 1rem;
+  font-size: 0.8em;
+  color: var(--text-muted);
+}
+
+.dsa-problem-list li.active .problem-status,
+.dsa-problem-list li.active a {
+  color: var(--accent-primary);
+}
+
+/* Breadcrumbs Refinement */
+.dsa-breadcrumbs ol {
+  font-size: 0.85rem;
+  margin-bottom: 1rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid var(--border-subtle);
+  width: 100%;
+}
+
+
+/* ========================================
+   DSA Visual Polish (LeetCode Style)
+   ======================================== */
+
+/* Sidebar Polish */
+.dsa-sidebar {
+  background: var(--bg-secondary);
+  /* Slightly darker/distinct from main */
+  border: none;
+  border-right: 1px solid var(--border-color);
+  border-radius: 0;
+  /* Full height look usually */
+}
+
+.dsa-sidebar-header {
+  background: var(--bg-card);
+  border-bottom: 1px solid var(--border-color);
+  padding: 1.25rem 1rem;
+  font-size: 1rem;
+  letter-spacing: -0.01em;
+}
+
+.dsa-module {
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.dsa-module summary {
+  background: transparent;
+  padding: 1rem;
+  font-weight: 500;
+  color: var(--text-primary);
+  opacity: 0.9;
+}
+
+.dsa-module summary:hover {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.dsa-problem-list li a {
+  padding: 0.75rem 1rem 0.75rem 2.5rem;
+  font-size: 0.9rem;
+  border-left: 2px solid transparent;
+}
+
+.dsa-problem-list li.active a {
+  background: rgba(59, 130, 246, 0.08);
+  /* Very subtle blue tint */
+  border-left-color: var(--accent-primary);
+  color: var(--text-primary);
+  font-weight: 500;
+}
+
+/* Status Icon (Circle) */
+.problem-status {
+  font-size: 0.6rem;
+  /* Smaller, cleaner dot */
+  top: 50%;
+  transform: translateY(-50%);
+  left: 1.2rem;
+}
+
+.dsa-problem-list li.active .problem-status {
+  color: var(--accent-primary);
+}
+
+
+/* Main Content Card */
+.dsa-main-content {
+  background: var(--bg-card);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border-color);
+  box-shadow: var(--shadow-md);
+  padding: 2rem;
+  max-width: 1000px;
+  /* Readability text width */
+  margin: 0 auto;
+  /* Center if space allows */
+}
+
+
+/* Breadcrumbs - Top & Clean */
+.dsa-breadcrumbs ol {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  background: transparent;
+  padding: 0;
+  margin-bottom: 1.5rem;
+  border-bottom: none;
+  font-family: var(--font-sans);
+}
+
+.dsa-breadcrumbs a {
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+.dsa-breadcrumbs li[aria-current="page"] {
+  color: var(--text-primary);
+  font-weight: 600;
+}
+
+
+/* Content "Boxes" (Cards inside content) */
+
+/* Example Code Blocks */
+.post-content pre {
+  background: #1e1e1e;
+  /* VS Code-like Dark */
+  border: 1px solid #333;
+  border-radius: var(--radius-md);
+  padding: 1.5rem;
+  margin: 1.5rem 0;
+  box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.2);
+}
+
+/* Example Sections separated */
+.post-content h3 {
+  /* "Example 1:" headers */
+  font-size: 1rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-muted);
+  margin-top: 2rem;
+  border-bottom: none;
+}
+
+/* Constraints Box */
+.post-content ul {
+  background: rgba(255, 255, 255, 0.03);
+  padding: 1.5rem 2.5rem;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-subtle);
+  margin: 1.5rem 0;
+}
+
+/* Solution Header Divider */
+.post-content h1 {
+  /* "Solution" Header */
+  margin-top: 4rem;
+  padding-top: 2rem;
+  border-top: 3px solid var(--border-color);
+  font-size: 1.75rem;
+}
+
+
+/* ========================================
+   DSA Layout Refinements (Full Width)
+   ======================================== */
+
+.dsa-layout-container {
+  max-width: 100%;
+  /* Full browser width */
+  padding: 1rem 2rem;
+  /* reduced vertical padding */
+  box-sizing: border-box;
+}
+
+.dsa-main-content {
+  max-width: none;
+  /* Allow infinite stretch */
+  width: 100%;
+  /* Fill flex container */
+  margin: 0;
+  /* Reset auto margins */
+}
+
+/* Make code blocks stretch too */
+.post-content pre {
+  max-width: 100%;
+}
+
+/* ========================================
+   DSA Refinements (Iter. 3 - Structure)
+   ======================================== */
+
+/* Top Bar Breadcrumbs */
+.dsa-top-bar {
+  background: var(--bg-card);
+  /* Darker than main bg usually */
+  border-bottom: 1px solid var(--border-color);
+  padding: 0.75rem 2rem;
+  width: 100%;
+}
+
+.dsa-breadcrumbs ol {
+  margin: 0;
+  padding: 0;
+  border-bottom: none;
+  /* Removed previous style */
+  font-size: 0.9rem;
+}
+
+/* Sidebar Fixes */
+.dsa-sidebar {
+  top: 0;
+  /* Reset sticky top calc if header is gone or different */
+  height: calc(100vh - 60px);
+  /* Adjust based on top bar height approx */
+  overflow-y: auto;
+  min-width: 260px;
+  /* Ensure sidebar doesn't shrink too much */
+}
+
+/* Main Container Adjustments */
+.dsa-layout-container {
+  display: flex;
+  width: 100%;
+  max-width: 100%;
+  padding: 0;
+  /* Remove padding to flush with edges like LeetCode */
+  margin: 0;
+  gap: 0;
+  /* Split view style */
+}
+
+/* Sidebar inside container */
+.dsa-sidebar {
+  border-right: 1px solid var(--border-color);
+  background: var(--bg-elevated);
+  /* Slightly distinct */
+}
+
+/* Main Content Area */
+.dsa-main-content {
+  flex: 1;
+  /* Grow to fill space */
+  padding: 2rem 4rem;
+  /* Content padding inside the split view */
+  border: none;
+  /* Remove card border since it's full view now */
+  box-shadow: none;
+  /* Remove card shadow */
+  border-radius: 0;
+  background: var(--bg-primary);
+  /* Main writing area */
+}
+
+/* Constrain ONLY the text width for readability, but let container stretch */
+.post-content,
+.dsa-header {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+
+/* ========================================
+   DSA Refinements (Iter. 4 - Fixes)
+   ======================================== */
+
+/* Sticky Top Bar */
+.dsa-top-bar {
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  box-shadow: 0 1px 0 var(--border-color);
+  /* Separator when scrolled */
+}
+
+/* Fix Sidebar Scrolling with Sticky Header */
+.dsa-sidebar {
+  position: sticky;
+  top: 60px;
+  /* approximates top bar height */
+  height: calc(100vh - 60px);
+}
+
+/* Sidebar Styling Updates */
+/* Ensure the summary (Course Overview) implies collapsibility if implemented, 
+   or just cleaner if not. User asked for "Overview bar" collapsible. 
+   If we wrap the whole content in a details, we need structure. 
+*/
+
+
+/* ========================================
+   DSA Refinements (Iter. 5 - Final Polish)
+   ======================================== */
+
+/* Sidebar "Course Overview" Toggle */
+.dsa-sidebar-header {
+  list-style: none;
+  /* Hide default marker */
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-weight: 600;
+  user-select: none;
+}
+
+.dsa-sidebar-header::-webkit-details-marker {
+  display: none;
+}
+
+.dsa-sidebar-header::after {
+  content: '−';
+  margin-left: auto;
+}
+
+details:not([open])>.dsa-sidebar-header::after {
+  content: '+';
+}
+
+/* Ensure sticky works */
+.dsa-top-bar {
+  position: -webkit-sticky;
+  position: sticky;
+  top: 0;
+  background: var(--bg-card);
+  /* Opaque background needed */
+  z-index: 1000;
+  border-bottom: 1px solid var(--border-color);
+}
+
+
+/* ========================================
+   DSA Refinements (Iter. 6 - Padding & Sticky)
+   ======================================== */
+
+/* Remove Top Bar from Body Flow to fix fixed/sticky issues */
+/* We want the body to handle scroll or the content? 
+   Let's make top bar FIXED and content scrollable underneath. */
+
+.dsa-top-bar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 50px;
+  /* Fixed height for calculations */
+  padding: 0 1.5rem;
+  /* Match sidebar/content padding horizontally */
+  display: flex;
+  align-items: center;
+  background: var(--bg-card);
+  /* Ensure no transparency */
+  border-bottom: 1px solid var(--border-color);
+  z-index: 1000;
+}
+
+/* Push container down by top bar height */
+/* Push container down by top bar height */
+.dsa-layout-container {
+  margin-top: 50px;
+  height: calc(100vh - 50px);
+  /* Full viewport height minus top bar */
+  overflow: hidden;
+  /* Prevent body scroll */
+  display: flex;
+  align-items: stretch;
+  /* Ensure children stretch to full height */
+}
+
+/* Sidebar independently scrollable */
+.dsa-sidebar {
+  /* Use flex-basis for width control */
+  flex: 0 0 280px;
+  height: 100%;
+  /* Fill container */
+  overflow-y: auto;
+  background: var(--bg-elevated);
+  /* Ensure background fills area */
+  border-right: 1px solid var(--border-color);
+}
+
+/* Main content independently scrollable */
+.dsa-main-content {
+  height: 100%;
+  overflow-y: auto;
+  padding: 2rem 4rem;
+}
+
+/* ZERO PADDING on side of container if preferred? */
+/* User complained about padding. Let's make it tight but readable. */
+.dsa-layout-container {
+  padding: 0;
+}
+
+/* Fix default Jekyll Header interference */
+/* DSA layout is now standalone, so we don't need to hide site-header */
+
+/* We don't have a body class easily. 
+   BUT dsa-layout-container exists only on DSA pages. 
+   We can style: body:has(.dsa-layout-container) .site-header { display: none; } 
+   Support might vary. 
+   Better: Add CSS to hide .site-header inside default layout conditional? No.
+   
+   Let's make dsa-top-bar z-index higher and overlapping?
+   Or just accept site header is above dsa-top-bar?
+   User said "breadcrumb is going away". 
+   If site header scrolls, sticky top bar might be stuck to top of *window*.
+   
+   If we use fixed positioning for top bar, it stays. 
+*/
+
+
+/* ========================================
+   DSA Refinements (Iter. 7 - Reset Default Layout)
+   ======================================== */
+
+.dsa-page {
+  overflow: hidden;
+  /* Important for fixed layout */
+  height: 100vh;
+}
+
+.dsa-logo {
+  font-weight: 700;
+  margin-right: 2rem;
+  color: var(--text-primary);
+}
+
+.dsa-logo a {
+  color: var(--accent-primary);
+  text-decoration: none;
+}
+
+
+/* ========================================
+   DSA Refinements (Iter. 8 - Toggle & Links)
+   ======================================== */
+
+/* Sidebar Toggle Button */
+.dsa-sidebar-toggle {
+  background: none;
+  border: none;
+  color: var(--text-secondary);
+  cursor: pointer;
+  padding: 0.5rem;
+  margin-right: 1rem;
+  display: flex;
+  align-items: center;
+  border-radius: 4px;
+}
+
+.dsa-sidebar-toggle:hover {
+  background: var(--bg-elevated);
+  color: var(--text-primary);
+}
+
+/* Sidebar Collapsed State */
+.dsa-layout-container.sidebar-collapsed .dsa-sidebar {
+  display: none;
+  /* Simplest collapse */
+}
+
+/* Sidebar Module Title Link/Toggle Split */
+.dsa-module-title {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  /* Remove default list-style from summary if we use custom icon. 
+     But we want standard arrow behavior for the toggle part? 
+     Let's keep standard marker for the toggle part. */
+}
+
+.dsa-module-link {
+  color: var(--text-primary);
+  text-decoration: none;
+  flex: 1;
+  /* Make link click area large but not over the arrow if possible */
+  padding: 0.25rem 0;
+  transition: color 0.2s;
+  font-weight: 600;
+}
+
+.dsa-module-link:hover {
+  color: var(--accent-primary);
+}
+
+/* Hide default marker to replace with custom or just position properly?
+   The user wants "All clicks register collapse", meaning the whole row is the SUMMARY.
+   We put a link INSIDE. We must stop propagation on the link click.
+   CSS can't do that, inline onclick is needed (added in HTML).
+*/
+
+.dsa-module-title::marker,
+.dsa-module-title::-webkit-details-marker {
+  /* Keep default marker or customize? 
+     User said "Array section cannot be clicked".
+     Let's keep the marker as the visual visual cue for expanding.
+  */
+}
+
+
+/* Sidebar Link Clickability Fix */
+.dsa-module-title a {
+  pointer-events: auto;
+  /* Ensure clickable */
+  position: relative;
+  z-index: 10;
+}
+
+/* Ensure the summary itself doesn't steal the click if possible (default behavior is fine usually) */
+/* The 'onclick="event.stopPropagation()"' in HTML handles the logic. 
+   We just need visually distinct hover states. */
+
+.dsa-module-link:hover {
+  text-decoration: underline;
+}
+
+/* Fix Collapsed Sidebar Transition */
+.dsa-layout-container {
+  transition: all 0.3s ease;
+}
+
+/* When collapsed, main content should take full width */
+.dsa-layout-container.sidebar-collapsed .dsa-main-content {
+  padding-left: 4rem;
+  /* Keep some padding from edge */
+  max-width: 100%;
+  /* Ensure it fills */
+}
+
+/* Adjust button visual */
+.dsa-sidebar-toggle svg {
+  width: 20px;
+  height: 20px;
+}
+
+/* ========================================
+   DSA Promo Button
+   ======================================== */
+
+.dsa-promo-btn {
+  background: var(--accent-gradient);
+  color: white !important;
+  /* Override default nav link color */
+  padding: 0.4rem 1rem !important;
+  border-radius: 20px;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: 600 !important;
+  box-shadow: 0 0 15px rgba(59, 130, 246, 0.4);
+  transition: transform 0.2s ease, box-shadow 0.2s ease !important;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.dsa-promo-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 0 20px rgba(139, 92, 246, 0.6);
+  text-decoration: none;
+}
+
+.dsa-badge {
+  background: #ffffff;
+  color: #3b82f6;
+  font-size: 0.7rem;
+  padding: 0.1rem 0.4rem;
+  border-radius: 4px;
+  text-transform: uppercase;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+/* Module List Styling for Course Pages */
+.dsa-module-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin-top: 1.5rem;
+}
+
+.dsa-module-item {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  background: var(--bg-elevated);
+  padding: 1.5rem;
+  border-radius: 8px;
+  text-decoration: none;
+  transition: transform 0.2s, background 0.2s;
+  border: 1px solid var(--border-color);
+}
+
+.dsa-module-item:hover {
+  transform: translateX(4px);
+  background: var(--bg-card);
+  border-color: var(--accent-primary);
+  text-decoration: none;
+}
+
+.dsa-item-order {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--text-tertiary);
+  min-width: 40px;
+}
+
+.dsa-item-content {
+  flex: 1;
+}
+
+.dsa-item-content h3 {
+  margin: 0 0 0.25rem;
+  font-size: 1.2rem;
+  color: var(--text-primary);
+}
+
+.dsa-item-content p {
+  margin: 0;
+  font-size: 0.95rem;
+  color: var(--text-secondary);
+}
+
+.dsa-item-arrow {
+  color: var(--accent-primary);
+  font-weight: bold;
+}
+
+/* ========================================
+   DSA Refinements (Iter. 9 - Sidebar Full Height)
+   ======================================== */
+
+/* Ensure proper flexbox layout for full height sidebar */
+.dsa-layout-container {
+  display: flex !important;
+  /* Force flex */
+  align-items: stretch;
+  /* Stretch children to full height */
+}
+
+/* Ensure sidebar has background color covering the full height */
+.dsa-sidebar {
+  background: var(--bg-elevated);
+  /* Match the darker theme */
+  flex-shrink: 0;
+  /* Prevent shrinking */
+  height: 100% !important;
+  /* Force height */
+  overflow-y: auto;
+  border-right: 1px solid var(--border-color);
+}
+
+/* Ensure main content takes remaining space */
+.dsa-main-content {
+  flex-grow: 1;
+  background: var(--bg-primary);
+  /* Ensure distinct background */
+}
+/* Force overrides for Sidebar Height if previous rules failed */
+.dsa-sidebar {
+  min-height: 100% !important;
+  box-sizing: border-box;
+}
+
+/* Ensure no other rule is overriding the background */
+aside.dsa-sidebar {
+  background-color: var(--bg-elevated) !important;
+}

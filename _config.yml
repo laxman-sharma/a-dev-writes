@@ -43,6 +43,9 @@ collections:
   dsa:
     output: true
     permalink: /dsa/:name/
+  opentelemetry:
+    output: true
+    permalink: /opentelemetry/:name/
 
 defaults:
   - scope:
@@ -55,7 +58,13 @@ defaults:
       path: ""
       type: "dsa"
     values:
-      layout: "post"
+      layout: "dsa_post"
+      author: Laxman Sharma
+  - scope:
+      path: ""
+      type: "opentelemetry"
+    values:
+      layout: "dsa_post"
       author: Laxman Sharma
 
 # Exclude from processing
@@ -70,6 +79,7 @@ exclude:
   - _site
   - examples
   - Data Structure & Algorithms
+  - otel-demo
 
 # Permalink structure
 permalink: /:year/:month/:day/:title/

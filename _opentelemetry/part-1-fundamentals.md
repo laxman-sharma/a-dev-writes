@@ -1,17 +1,20 @@
 ---
-layout: post
-title: "OpenTelemetry with Java: Part 1 - Understanding the Fundamentals"
+layout: dsa_post
+course: opentelemetry
+title: "Part 1: Fundamentals"
+category: "Module 1: Foundations"
+order: 1
 date: 2026-01-08
 author: Laxman Sharma
 image: /assets/images/otel-hero-banner.png
 categories: [observability, java]
 tags: [opentelemetry, java, observability, microservices]
-excerpt: "A comprehensive introduction to OpenTelemetry concepts for Java developers. Learn about traces, metrics, logs, and how they work together in distributed microservices."
+excerpt: "Understanding Traces, Metrics, and Logs."
 ---
 
 # OpenTelemetry with Java: Understanding the Fundamentals
 
-*Part 1 of a 6-part series on implementing observability in Java microservices*
+*Part 1 of an 8-part series on implementing observability in Java microservices*
 
 ---
 
@@ -178,23 +181,6 @@ public PaymentResult processPayment(
 **Cons**: Requires code changes, more maintenance
 
 **Best practice**: Start with auto-instrumentation, then add manual instrumentation where you need business context.
-
-## What's Next
-
-Now you have the mental model. In **Part 2**, we'll get hands-on:
-
-- Set up a 3-service demo project
-- Configure the OpenTelemetry Java Agent  
-- Run Jaeger locally with Docker
-- See your first distributed trace
-
-No more theory—just code.
-
----
-
-*Next: [Part 2 - Zero to Tracing in 15 Minutes]({{ "" | relative_url }}/2026/01/09/opentelemetry-java-part-2-zero-to-tracing/)*
-
----
 
 ## Resources
 

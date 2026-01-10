@@ -1,17 +1,20 @@
 ---
-layout: post
-title: "OpenTelemetry with Java: Part 2 - Zero to Tracing in 15 Minutes"
+layout: dsa_post
+course: opentelemetry
+title: "Part 2: Zero to Tracing"
+category: "Module 1: Foundations"
+order: 2
 date: 2026-01-09
 author: Laxman Sharma
 image: /assets/images/otel-part2-hero.png
 categories: [observability, java]
 tags: [opentelemetry, java, observability, tracing, jaeger]
-excerpt: "Get distributed tracing working in your Java microservices with zero code changes. We'll use the OpenTelemetry Java Agent and Jaeger to see traces in action."
+excerpt: "Setting up the Java Agent and running your first trace."
 ---
 
 # Zero to Tracing in 15 Minutes
 
-*Part 2 of a 6-part series on implementing observability in Java microservices*
+*Part 2 of an 8-part series on implementing observability in Java microservices*
 
 ---
 
@@ -212,6 +215,12 @@ You should see a beautiful waterfall visualization showing:
   - `GET /inventory/check` (inventory-service)
   - `POST /payments` (payment-service)
 
+![Jaeger Traces Visual]({{ "/assets/images/otel-jaeger-traces.png" | relative_url }})
+*Above: A real-world example of distributed traces in Jaeger showing the flow from Order → Inventory → Payment.*
+
+> [!TIP]
+> **Hands-On Lab**: Want to see this in action yourself? Check out the complete working demo in the [`otel-demo`](https://github.com/laxman-sharma/otel-demo) directory. It includes a one-click Docker Compose setup with all three services, the collector, Jaeger, Prometheus, and Grafana pre-configured.
+
 ## What the Agent Instruments Automatically
 
 The OTel Java Agent provides out-of-the-box instrumentation for:
@@ -267,12 +276,6 @@ Now you have distributed tracing with **zero code changes**. But the auto-genera
 - Exception recording and events
 
 The traces will become much more useful for debugging real production issues.
-
----
-
-*Previous: [Part 1 - Understanding the Fundamentals]({{ "" | relative_url }}/2026/01/08/opentelemetry-java-part-1-fundamentals/)*
-
-*Next: [Part 3 - Adding Custom Instrumentation]({{ "" | relative_url }}/2026/01/10/opentelemetry-java-part-3-custom-instrumentation/)*
 
 ---
 

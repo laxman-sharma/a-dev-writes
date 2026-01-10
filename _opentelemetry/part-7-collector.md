@@ -1,21 +1,157 @@
 ---
-layout: post
-title: "OpenTelemetry with Java: Part 6 - Production Patterns & The Collector"
+layout: dsa_post
+course: opentelemetry
+title: "Part 7: The Collector"
+category: "Module 3: Production"
+order: 7
 date: 2026-01-13
 author: Laxman Sharma
 image: /assets/images/otel-part6-hero.png
 categories: [observability, java]
 tags: [opentelemetry, java, observability, production, kubernetes]
-excerpt: "Production-ready observability with the OpenTelemetry Collector. Learn about sampling strategies, multi-backend export, and Kubernetes deployment patterns."
+excerpt: "Sampling, Collector, and Performance tuning."
 ---
 
-# Production Patterns & The Collector
+# The OpenTelemetry Collector: Deep Dive
 
-*Part 6 of a 6-part series on implementing observability in Java microservices*
+*Part 7 of an 8-part series on implementing observability in Java microservices*
 
 ---
 
-We've built traces, metrics, and logs. But sending telemetry directly from applications to backends doesn't scale.
+The **OpenTelemetry Collector** is the unsung hero of the observability stack. It's a vendor-neutral proxy that sits between your applications and your backend (Jaeger, Datadog, Prometheus).
+
+> [!NOTE]
+> **Try It Yourself**: The [`otel-demo`](https://github.com/laxman-sharma/otel-demo) directory contains a fully functional collector setup with three microservices. Run `docker-compose up` to see the collector in action with Jaeger, Prometheus, and Grafana.
+
+## Why not send directly?
+
+You *can* send telemetry directly from your Java app to Jaeger. But what if you want to switch to Datadog later? You'd have to redeploy every single microservice with new credentials and SDK configurations.
+
+With the Collector:
+1.  **Apps** send to **Collector** (via OTLP).
+2.  **Collector** sends to **Jaeger + Datadog + S3**.
+
+Your apps never know where the data ends up.
+
+## The Architecture: Receivers, Processors, Exporters
+
+The Collector is an ETL (Extract, Transform, Load) pipeline.
+
+```mermaid
+graph LR
+    App[Java App] -->|OTLP| Receiver
+    subgraph Collector
+    Receiver --> Processor1[Batch]
+    Processor1 --> Processor2[Filter]
+    Processor2 --> Processor3[Attributes]
+    Processor3 --> Exporter1[Jaeger]
+    Processor3 --> Exporter2[Prometheus]
+    end
+    Exporter1 --> JaegerDB
+    Exporter2 --> PromDB
+```
+
+### 1. Receivers (Input)
+How data gets IN.
+*   **OTLP**: The standard OTel protocol (gRPC/HTTP).
+*   **Jaeger/Zipkin**: For legacy apps.
+*   **Host Metrics**: CPU/Memory of the collector host itself.
+
+### 2. Processors (Transformation)
+The magic happens here. Processors run **in order**.
+
+#### The Batch Processor (Mandatory)
+Buffers telemetry to send in chunks. Drastically reduces network calls.
+```yaml
+processors:
+  batch:
+    timeout: 1s
+    send_batch_size: 1024
+```
+
+#### The Memory Limiter (Safety)
+Prevents the Collector from crashing (OOM) if traffic spikes. **Always** put this first.
+```yaml
+processors:
+  memory_limiter:
+    check_interval: 1s
+    limit_mib: 1000        # Soft limit
+    spike_limit_mib: 200   # Hard buffer
+```
+
+#### The Attributes Processor (Scrubbing PII)
+Use this to remove sensitive data like passwords or credit cards *before* they leave your infrastructure.
+```yaml
+processors:
+  attributes:
+    actions:
+      - key: db.statement
+        action: delete  # Don't log raw SQL queries
+      - key: credit_card
+        action: hash    # Hash sensitive fields
+```
+
+### 3. Exporters (Output)
+Where data goes.
+*   **OTLP**: To another collector (load balancing).
+*   **Prometheus**: Exposes a `/metrics` endpoint for scraping.
+*   **Logging**: Prints to stdout (great for debugging).
+
+## The "Gateway" vs "Agent" Pattern
+
+### Pattern A: Despair (Direct)
+Every app talks to the vendor.
+*   **Pros**: Easy demo.
+*   **Cons**: Security nightmare (API keys in every app).
+
+### Pattern B: The Agent (DaemonSet)
+One collector on every Kubernetes Node.
+*   **Pros**: Apps talk to `localhost`. Local caching.
+*   **Cons**: Resource intensive on small clusters.
+
+### Pattern C: The Gateway (Deployment)
+A centralized cluster of Collectors.
+*   **Pros**: Central management. Scalable.
+*   **Cons**: Single point of failure (run HA replicas!).
+
+## Configuration Example
+
+Here is a production-ready `config.yaml`:
+
+```yaml
+receivers:
+  otlp:
+    protocols:
+      grpc: { endpoint: "0.0.0.0:4317" }
+      http: { endpoint: "0.0.0.0:4318" }
+
+processors:
+  memory_limiter:
+    check_interval: 1s
+    limit_mib: 1536
+    spike_limit_mib: 512
+  batch:
+    timeout: 1s
+  resourcedetection:
+    detectors: [env, system] # Add 'host.name', 'os.type' automatically
+
+exporters:
+  otlp/honeycomb:
+    endpoint: "api.honeycomb.io:443"
+    headers:
+      "x-honeycomb-team": "${HONEYCOMB_API_KEY}"
+  logging:
+    verbosity: detailed
+
+service:
+  pipelines:
+    traces:
+      receivers: [otlp]
+      processors: [memory_limiter, resourcedetection, batch]
+      exporters: [otlp/honeycomb]
+```
+
+---
 
 Enter the **OpenTelemetry Collector**—the central nervous system of your observability pipeline.
 
@@ -160,6 +296,9 @@ services:
     ports:
       - "3000:3000"
 ```
+
+![Grafana Datasources]({{ "/assets/images/otel-grafana-datasources.png" | relative_url }})
+*Above: Grafana configured with both Jaeger and Prometheus as data sources, ready for unified visualization.*
 
 Now point your apps to the collector:
 
@@ -455,9 +594,14 @@ We've covered the complete journey:
 
 You now have everything needed to implement production-grade observability in your Java microservices.
 
----
+## Production Security & Hardening
 
-*Previous: [Part 5 - Logs in Context]({{ "" | relative_url }}/2026/01/12/opentelemetry-java-part-5-logs/)*
+When deploying the Collector in production, follow these security best practices:
+
+1. **Receiver Authentication**: Use the `auth` extension to require API keys or OIDC tokens for ingestion.
+2. **TLS Everywhere**: Always enable TLS for both receivers and exporters.
+3. **Internal Telemetry**: Use the `health_check` and `zpages` extensions to monitor the collector's internal health without exposing OTLP ports publicly.
+4. **Scrubbing Data**: Use the `redaction` or `attributes` processor to remove sensitive PII (emails, tokens) at the edge.
 
 ---
 

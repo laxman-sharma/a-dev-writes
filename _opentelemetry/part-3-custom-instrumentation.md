@@ -1,17 +1,20 @@
 ---
-layout: post
-title: "OpenTelemetry with Java: Part 3 - Adding Custom Instrumentation"
+layout: dsa_post
+course: opentelemetry
+title: "Part 3: Custom Instrumentation"
+category: "Module 2: Implementation"
+order: 3
 date: 2026-01-10
 author: Laxman Sharma
 image: /assets/images/otel-part3-hero.png
 categories: [observability, java]
 tags: [opentelemetry, java, observability, spring-boot, custom-attributes]
-excerpt: "Enrich your auto-instrumentation with custom spans, business attributes, and events. Learn when and how to add manual instrumentation for better debugging."
+excerpt: "Adding manual spans and attributes."
 ---
 
 # Adding Custom Instrumentation
 
-*Part 3 of a 6-part series on implementing observability in Java microservices*
+*Part 3 of an 8-part series on implementing observability in Java microservices*
 
 ---
 
@@ -20,6 +23,9 @@ In [Part 2]({{ "" | relative_url }}/2026/01/09/opentelemetry-java-part-2-zero-to
 When debugging production issues, you need **business context**: *Which order failed? Which customer? What was the payment amount?*
 
 That's where manual instrumentation comes in.
+
+> [!TIP]
+> **Hands-On Example**: The [`otel-demo`](https://github.com/laxman-sharma/otel-demo) services demonstrate real-world custom instrumentation with `@WithSpan`, business attributes, and error handling. See `OrderController.java` for practical examples.
 
 ## When Auto-Instrumentation Isn't Enough
 
@@ -235,7 +241,51 @@ span.setAttribute("order.item_count", items.size());
 span.setAttribute("customer.tier", customer.getTier());
 ```
 
-Avoid sensitive data (PII, passwords, tokens).
+## Context Propagation & Baggage (The "Hidden" Power)
+
+One of the most powerful—and often overlooked—features of OpenTelemetry is **Baggage**.
+
+While **Attributes** are attached to a single *Span* (and stay there), **Baggage** travels with the *Context* across process boundaries (HTTP headers).
+
+### The Problem it Solves
+Imagine you have a chain of 5 microservices:
+`Frontend -> Auth -> Order -> Inventory -> Shipping`
+
+You want to know: *"Which specific customer ID triggered this shipping request?"*
+But the `Shipping` service doesn't have the `HttpServletRequest` with the auth token. It just got an internal gRPC call.
+
+Do you change every method signature to pass `customerId` down the stack? **No.** You use Baggage.
+
+```java
+import io.opentelemetry.api.baggage.Baggage;
+import io.opentelemetry.context.Scope;
+
+// In Service A (Entry Point)
+public void handleRequest(String userId) {
+    // Put userId into Baggage
+    // It will now auto-propagate to Service B, C, D... via HTTP headers
+    try (Scope scope = Baggage.current().toBuilder()
+            .put("app.user_id", userId)
+            .put("app.is_vip", "true")
+            .build()
+            .makeCurrent()) {
+        
+        callDownstreamService();
+    }
+}
+
+// In Service D (Deep Downstream)
+public void processShipment() {
+    // Retrieve from Baggage - no method arguments needed!
+    String userId = Baggage.current().getEntryValue("app.user_id");
+    
+    // Add it to the current span so it shows up in Jaeger
+    Span.current().setAttribute("user.id", userId);
+}
+```
+
+> **Warning**: Baggage is serialized into headers. Do not put large objects or sensitive PII (like passwords) in Baggage. Use it for IDs, flags, and trace context.
+
 
 ## Complete Example: Order Processing
 
@@ -314,12 +364,6 @@ In **Part 4**, we'll add **custom metrics**:
 - Business gauges (orders per minute, active users)
 
 We'll export to Prometheus and build dashboards in Grafana.
-
----
-
-*Previous: [Part 2 - Zero to Tracing]({{ "" | relative_url }}/2026/01/09/opentelemetry-java-part-2-zero-to-tracing/)*
-
-*Next: [Part 4 - Metrics That Matter]({{ "" | relative_url }}/2026/01/11/opentelemetry-java-part-4-metrics/)*
 
 ---
 

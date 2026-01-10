@@ -1,5 +1,5 @@
 ---
-layout: post
+layout: dsa_post
 title: "Best Time to Buy and Sell Stock II"
 category: Array
 order: 2

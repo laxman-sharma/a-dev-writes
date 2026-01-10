@@ -1,5 +1,5 @@
 ---
-layout: post
+layout: dsa_post
 title: "Remove Duplicates from Sorted Array"
 category: Array
 order: 1

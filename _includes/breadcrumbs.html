@@ -1,0 +1,18 @@
+<nav class="dsa-breadcrumbs" aria-label="Breadcrumb">
+    {% assign course_key = page.course | default: 'dsa' %}
+    {% assign course_home = '/' | append: course_key | append: '/' | relative_url %}
+    <ol>
+        <li><a href="{{ '/' | relative_url }}">Home</a></li>
+        <li><a href="{{ course_home }}">{{ course_key | replace: '-', ' ' | upcase }}</a></li>
+        {% if page.category %}
+        {% assign cat_slug = page.category | slugify %}
+        {% assign category_url = '/' | append: course_key | append: '/' | append: cat_slug | append: '/' | relative_url
+        %}
+        <!-- Only show category in breadcrumb if we're NOT on the category landing page itself -->
+        {% unless page.url == category_url %}
+        <li><a href="{{ category_url }}">{{ page.category }}</a></li>
+        {% endunless %}
+        {% endif %}
+        <li aria-current="page">{{ page.title }}</li>
+    </ol>
+</nav>

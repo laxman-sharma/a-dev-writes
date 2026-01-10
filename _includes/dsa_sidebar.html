@@ -1,0 +1,43 @@
+<aside class="dsa-sidebar">
+    <details open> <!-- Main Course Overview Toggle -->
+        <summary class="dsa-sidebar-header">
+            Course Overview
+        </summary>
+
+        <div class="dsa-sidebar-content">
+            {% assign course_key = include.course | default: page.collection | default: 'dsa' %}
+            {% assign course_collection = site[course_key] %}
+            {% assign grouped_items = course_collection | group_by: "category" %}
+
+            {% for category in grouped_items %}
+            {% assign is_active = false %}
+            {% for item in category.items %}
+            {% if item.url == page.url %}
+            {% assign is_active = true %}
+            {% endif %}
+            {% endfor %}
+
+            <details class="dsa-module" {% if is_active %}open{% endif %}>
+                {% assign cat_slug = category.name | slugify %}
+                <summary class="dsa-module-title">
+                    <a href="{{ '/' | append: course_key | append: '/' | append: cat_slug | append: '/' | relative_url }}"
+                        class="dsa-module-link" onclick="event.stopPropagation()">{{ category.name }}</a>
+                </summary>
+                <ul class="dsa-problem-list">
+                    {% assign items = category.items | sort: "order" %}
+                    {% for item in items %}
+                    <li class="{% if item.url == page.url %}active{% endif %}">
+                        <a href="{{ item.url | relative_url }}">
+                            <span class="problem-status">
+                                {% if item.url == page.url %}●{% else %}○{% endif %}
+                            </span>
+                            <span class="problem-title">{{ item.title }}</span>
+                        </a>
+                    </li>
+                    {% endfor %}
+                </ul>
+            </details>
+            {% endfor %}
+        </div>
+    </details>
+</aside>
