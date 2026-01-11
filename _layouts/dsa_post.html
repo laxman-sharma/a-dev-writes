@@ -100,9 +100,40 @@
     </div>
 
     <script>
-        document.getElementById('dsa-sidebar-toggle').addEventListener('click', function () {
-            document.querySelector('.dsa-layout-container').classList.toggle('sidebar-collapsed');
-        });
+        (function() {
+            const toggleBtn = document.getElementById('dsa-sidebar-toggle');
+            const container = document.querySelector('.dsa-layout-container');
+            const sidebar = document.querySelector('.dsa-sidebar');
+            
+            // Toggle sidebar
+            toggleBtn.addEventListener('click', function(e) {
+                e.stopPropagation();
+                container.classList.toggle('sidebar-open');
+                container.classList.toggle('sidebar-collapsed');
+            });
+            
+            // Close sidebar when clicking on the backdrop (the ::before pseudo-element area)
+            container.addEventListener('click', function(e) {
+                // Only close if sidebar is open and click is NOT on sidebar
+                if (container.classList.contains('sidebar-open') && !sidebar.contains(e.target) && e.target !== toggleBtn) {
+                    container.classList.remove('sidebar-open');
+                }
+            });
+            
+            // Close sidebar when pressing Escape
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape' && container.classList.contains('sidebar-open')) {
+                    container.classList.remove('sidebar-open');
+                }
+            });
+            
+            // Close sidebar when clicking a link inside it (on mobile)
+            sidebar.addEventListener('click', function(e) {
+                if (e.target.tagName === 'A' && window.innerWidth <= 768) {
+                    container.classList.remove('sidebar-open');
+                }
+            });
+        })();
     </script>
 </body>
 
