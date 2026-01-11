@@ -44,13 +44,16 @@ There are two main approaches to solve this problem:
 
 ## Approach 1: HashMap (Frequency Count)
 
-1.  Build a frequency map from the **smaller** array
-2.  Iterate through the other array
-3.  If element exists in map with count > 0, add to result and decrement count
+1.  Swap arrays so `nums1` is always the **larger** array (for in-place result storage)
+2.  Build a frequency map from `nums1`
+3.  Iterate through the **smaller** array (`nums2`)
+4.  If element exists in map with count > 0, add to result and decrement count
+
+> **Note:** Some implementations build the map from the smaller array for space optimization. This implementation builds from the larger array to allow reusing `nums1` for the output.
 
 **Complexity:**
 *   Time: O(m + n)
-*   Space: O(min(m, n)) for the hashmap
+*   Space: O(max(m, n)) for the hashmap
 
 ## Approach 2: Two Pointers (Sorted Arrays)
 
