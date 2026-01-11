@@ -73,6 +73,8 @@ Example: `[4, 1, 2, 1, 2]`
 *   **Time**: O(n) - single pass
 *   **Space**: O(1) - only one variable
 
+![XOR Bit Manipulation Visualization]({{ "/assets/images/dsa-single-number.png" | relative_url }})
+
 ---
 
 # Solution

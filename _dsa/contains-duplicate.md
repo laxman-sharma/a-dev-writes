@@ -60,6 +60,8 @@ The optimal approach uses a **HashSet** to track elements we've seen:
 1.  **Sorting**: Sort the array, then check adjacent elements. O(n log n) time, O(1) space.
 2.  **Brute Force**: Compare every pair. O(n²) time, O(1) space.
 
+![Contains Duplicate Visualization]({{ "/assets/images/dsa-contains-duplicate.png" | relative_url }})
+
 ---
 
 # Solution
